@@ -1,0 +1,585 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}دیجی‌شاپ | فروشگاه آنلاین{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        #live-search-results {
+            /* Styles remain largely the same but positioning context is crucial */
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Enhanced shadow */
+            border: 1px solid #e5e7eb; /* Added light border */
+        }
+
+        #live-search-results a {
+            transition: background-color 0.2s;
+            /* Removed border-bottom here as it's added dynamically in JS */
+        }
+
+        /* JS now adds border-b to each item, last:border-b-0 in JS handles the last one */
+
+        #live-search-results a:hover,
+        #live-search-results a:focus {
+            background-color: #f9fafb; /* Light hover background */
+            outline: none;
+        }
+
+         /* Ensure the parent of live-search-results is relative */
+        .search-container.relative {
+             position: relative;
+             /* Ensure z-index is high enough if other elements overlap */
+             z-index: 40; /* Slightly lower than nav's z-50 */
+        }
+
+
+         /* Style for products in homepage grid */
+         #products-grid .relative.group {
+             /* Ensure relative positioning for badges */
+         }
+
+         #products-grid img {
+             /* transition applied in JS */
+         }
+
+         #products-grid .badge {
+              /* absolute positioning and styling applied in JS */
+         }
+
+         /* Styles for the amazing offers slider */
+         #discount-slider {
+             /* Styles applied in homepage content block */
+         }
+
+          #discount-slider img {
+             /* Styles applied in JS */
+         }
+
+         #slider-dots {
+             /* Styles applied in JS */
+         }
+          #slider-dots button {
+             /* Styles applied in JS */
+         }
+
+
+         /* Utility to prevent flash of unstyled content with Alpine.js */
+         [x-cloak] { display: none !important; }
+
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+<nav x-data="categoryDropdown()" x-init="init()" class="bg-white shadow-sm sticky top-0 z-50"> {# Increased z-index for sticky nav #}
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+
+            <a href="{% url 'home-page' %}" class="flex items-center text-xl font-bold text-red-600 hover:text-red-700 flex-shrink-0"> {# flex-shrink-0 #}
+                <i class="fas fa-store ml-2"></i>دیجی‌شاپ
+            </a>
+
+            <div class="hidden lg:flex items-center flex-1 space-x-4 space-x-reverse px-4"> {# Added some horizontal padding #}
+
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open"
+                            class="flex items-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"> {# Styled button #}
+                        <span>دسته‌بندی‌ها</span>
+                        <i class="fas fa-chevron-down mr-2 text-sm transform transition-transform duration-200" :class="{ 'rotate-180': open }"></i> {# Added rotation on open #}
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden origin-top-right"> {# Added transition classes and origin #}
+                        <template x-if="loading">
+                            <div class="p-4 text-center text-gray-500">در حال بارگذاری…</div>
+                        </template>
+                        <template x-if="error">
+                            <div class="p-4 text-center text-red-500" x-text="error"></div>
+                        </template>
+                        <template x-for="cat in categories" :key="cat.id">
+                            <div class="border-b border-gray-100 last:border-none"> {# Border style #}
+                                <a :href="'/category/' + cat.id + '/'"
+                                   class="block font-semibold text-lg text-gray-800 hover:text-red-600 px-4 py-3 transition duration-150 ease-in-out" @click="open = false"> {# Styled link, added padding, transition, close on click #}
+                                   <span x-text="cat.name"></span> {# Use span for text #}
+                                </a>
+                                <template x-if="cat.children && cat.children.length > 0">
+                                    <div class="mt-1 px-4 pb-2 space-y-1"> {# Added padding and spacing #}
+                                        <template x-for="child in cat.children" :key="child.id">
+                                            <a :href="'/category/' + child.id + '/'"
+                                               class="block text-sm text-gray-600 hover:text-red-600 py-1 transition duration-150 ease-in-out" @click="open = false"
+                                               x-text="child.name"></a> {# Styled link, close on click #}
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <a href="{% url 'store-list-page' %}"
+                   class="flex items-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"> {# Styled button #}
+                    <span>فروشگاه‌ها</span>
+                    <i class="fas fa-store ml-2 text-sm"></i>
+                </a>
+
+                {# Added search-container class and made it relative #}
+                <div class="search-container relative flex items-center bg-gray-100 rounded-full overflow-visible flex-1 max-w-xl">
+                    <input type="text" id="search-input" name="search"
+                           placeholder="نام محصول را وارد کنید..."
+                           class="flex-grow px-4 py-2 bg-transparent focus:outline-none text-gray-700"
+                           autocomplete="off">
+                    <div id="live-search-results"
+                         class="absolute top-full right-0 left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-50 hidden"></div> {# Positioning relative to .search-container #}
+                </div>
+
+
+            </div>
+
+            <div class="flex items-center space-x-4 space-x-reverse flex-shrink-0"> {# flex-shrink-0 #}
+                <a href="/shopping_cart/" class="relative text-gray-700 hover:text-red-600 transition duration-150 ease-in-out"> {# Styled link #}
+                    <i class="fas fa-shopping-cart fa-lg"></i>
+                    <span id="cart-count"
+                          class="absolute -top-1 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full ring-1 ring-white">0</span> {# Styled cart count badge #}
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard-customer' %}" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out hidden sm:inline-block"> {# Styled link, hide on small screens #}
+                         <i class="fas fa-user-circle fa-lg ml-1"></i> حساب کاربری
+                    </a>
+                     <a href="{% url 'dashboard-customer' %}" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out sm:hidden"> {# Styled link, show on small screens #}
+                         <i class="fas fa-user-circle fa-lg"></i>
+                    </a>
+                    <button id="logout-btn" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out hidden sm:inline-block"> {# Styled button, hide on small screens #}
+                         <i class="fas fa-sign-out-alt fa-lg ml-1"></i> خروج
+                    </button>
+                     <button id="logout-btn-sm" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out sm:hidden"> {# Styled button, show on small screens #}
+                         <i class="fas fa-sign-out-alt fa-lg"></i>
+                    </button>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out hidden sm:inline-block"> {# Styled link, hide on small screens #}
+                         <i class="fas fa-sign-in-alt fa-lg ml-1"></i> ورود
+                    </a>
+                     <a href="{% url 'login' %}" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out sm:hidden"> {# Styled link, show on small screens #}
+                         <i class="fas fa-sign-in-alt fa-lg"></i>
+                    </a>
+                    <a href="{% url 'register' %}" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out hidden sm:inline-block"> {# Styled link, hide on small screens #}
+                         <i class="fas fa-user-plus fa-lg ml-1"></i> ثبت‌نام
+                    </a>
+                     <a href="{% url 'register' %}" class="text-gray-700 hover:text-red-600 transition duration-150 ease-in-out sm:hidden"> {# Styled link, show on small screens #}
+                         <i class="fas fa-user-plus fa-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+
+             <div class="lg:hidden flex items-center ml-4"> {# Show on large screens and down #}
+                 <button @click="openMobile = !openMobile" class="text-gray-700 hover:text-red-600 focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                 </button>
+            </div>
+
+        </div>
+
+        <div x-show="openMobile" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-full" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-full"
+             class="fixed inset-0 bg-white z-40 p-6 lg:hidden transform"
+             @click.away="openMobile = false">
+             <div class="flex justify-between items-center mb-6">
+                 <a href="{% url 'home-page' %}" class="flex items-center text-xl font-bold text-red-600 hover:text-red-700">
+                    <i class="fas fa-store ml-2"></i>دیجی‌شاپ
+                 </a>
+                 <button @click="openMobile = false" class="text-gray-700 hover:text-red-600 focus:outline-none">
+                    <i class="fas fa-times fa-lg"></i>
+                 </button>
+             </div>
+
+             <div class="relative flex items-center bg-gray-100 rounded-full overflow-visible mb-6">
+                 <input type="text" id="search-input-mobile" name="search"
+                        placeholder="جستجو در محصولات..."
+                        class="flex-grow px-4 py-2 bg-transparent focus:outline-none text-gray-700"
+                        autocomplete="off">
+                 <div id="live-search-results-mobile"
+                      class="absolute top-full right-0 left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-50 hidden"></div>
+             </div>
+
+             <nav class="space-y-4">
+                 <a href="{% url 'home-page' %}" class="block text-lg font-semibold text-gray-800 hover:text-red-600 py-2">صفحه اصلی</a>
+                  <div class="border-b border-gray-200 pb-4">
+                     <button @click="$nextTick(() => $el.querySelector('.categories-mobile-list').classList.toggle('hidden'))"
+                             class="w-full flex justify-between items-center text-lg font-semibold text-gray-800 hover:text-red-600 py-2">
+                        <span>دسته‌بندی‌ها</span>
+                         <i class="fas fa-chevron-down text-sm transform transition-transform duration-200"></i>
+                     </button>
+                      <div class="categories-mobile-list hidden mt-2 space-y-2 pl-4">
+                         <template x-if="loading">
+                             <div class="p-2 text-center text-gray-500">در حال بارگذاری…</div>
+                         </template>
+                         <template x-if="error">
+                             <div class="p-2 text-center text-red-500" x-text="error"></div>
+                         </template>
+                         <template x-for="cat in categories" :key="'mobile-cat-' + cat.id">
+                             <div>
+                                 <a :href="'/category/' + cat.id + '/'"
+                                    class="block font-semibold text-gray-800 hover:text-red-600 text-base py-1"
+                                    x-text="cat.name" @click="openMobile = false"></a>
+                                 <template x-if="cat.children && cat.children.length > 0">
+                                     <div class="mt-1 pl-4 space-y-1">
+                                         <template x-for="child in cat.children" :key="'mobile-child-' + child.id">
+                                             <a :href="'/category/' + child.id + '/'"
+                                                class="block text-sm text-gray-600 hover:text-red-600 py-1"
+                                                x-text="child.name" @click="openMobile = false"></a>
+                                         </template>
+                                     </div>
+                                 </template>
+                             </div>
+                         </template>
+                      </div>
+                  </div>
+
+                  <a href="{% url 'store-list-page' %}" class="block text-lg font-semibold text-gray-800 hover:text-red-600 py-2" @click="openMobile = false">فروشگاه‌ها</a>
+                 {% if user.is_authenticated %}
+                     <a href="{% url 'dashboard-customer' %}" class="block text-lg font-semibold text-gray-800 hover:text-red-600 py-2" @click="openMobile = false">حساب کاربری</a>
+                     <button id="logout-btn-mobile" class="w-full text-right block text-lg font-semibold text-gray-800 hover:text-red-600 py-2">خروج</button>
+                 {% else %}
+                     <a href="{% url 'login' %}" class="block text-lg font-semibold text-gray-800 hover:text-red-600 py-2" @click="openMobile = false">ورود</a>
+                     <a href="{% url 'register' %}" class="block text-lg font-semibold text-gray-800 hover:text-red-600 py-2" @click="openMobile = false">ثبت‌نام</a>
+                 {% endif %}
+             </nav>
+
+        </div>
+
+
+    </div>
+</nav>
+
+
+<main class="flex-1"> {# main area takes remaining height #}
+    {% block content %}{% endblock %} {# Content from child templates will be injected here #}
+</main>
+
+<footer class="bg-white shadow-inner mt-auto py-8">
+    <div class="container mx-auto px-4 text-center space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <h3 class="text-lg font-bold mb-4">درباره دیجی‌شاپ</h3>
+                <p class="text-gray-600 text-sm">فروشگاه اینترنتی معتبر با بهترین قیمت‌ها و تخفیف‌های شگفت‌انگیز.</p> {# Updated text #}
+            </div>
+            <div>
+                <h3 class="text-lg font-bold mb-4">پشتیبانی</h3>
+                <p class="text-gray-600 text-sm"><i class="fas fa-phone ml-2"></i>۰۲۱-۱۲۳۴۵۶۷۸</p> {# text-sm #}
+                <p class="text-gray-600 text-sm"><i class="fas fa-envelope ml-2"></i>info@digishop.ir</p> {# text-sm #}
+            </div>
+            <div>
+                <h3 class="text-lg font-bold mb-4">لینک‌های مفید</h3>
+                <ul class="space-y-2 text-gray-600 text-sm"> {# text-sm #}
+                    <li><a href="#" class="hover:underline">تماس با ما</a></li>
+                    <li><a href="#" class="hover:underline">سوالات متداول</a></li>
+                     <li><a href="#" class="hover:underline">قوانین و مقررات</a></li> {# Added example link #}
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold mb-4">ما را دنبال کنید</h3>
+                <div class="flex justify-center space-x-4 space-x-reverse">
+                    <a href="#" class="text-gray-600 hover:text-red-600 transition duration-150 ease-in-out"><i class="fab fa-telegram fa-lg"></i></a> {# Added transition #}
+                    <a href="#" class="text-gray-600 hover:text-red-600 transition duration-150 ease-in-out"><i class="fab fa-instagram fa-lg"></i></a> {# Added transition #}
+                     <a href="#" class="text-gray-600 hover:text-red-600 transition duration-150 ease-in-out"><i class="fab fa-twitter fa-lg"></i></a> {# Added example link #}
+                </div>
+            </div>
+        </div>
+        <div class="text-sm text-gray-500">© {% now "Y" %} دیجی‌شاپ. تمامی حقوق محفوظ است.</div>
+    </div>
+</footer>
+
+<script>
+    // Alpine.js data for category dropdown in navigation
+    function categoryDropdown() {
+        return {
+            categories: [], // Array to hold category data
+            loading: false, // Loading state indicator
+            error: null, // Error message state
+            openMobile: false, // State for controlling mobile menu visibility
+            init() {
+                // Fetch categories when component initializes
+                this.fetchCategories();
+            },
+            // Function to fetch categories from the API
+            fetchCategories() {
+                this.loading = true; // Set loading to true
+                this.error = null; // Clear previous errors
+                // Fetch categories where parent is null (top-level categories)
+                fetch('/api/categories/?parent__isnull=true') // Assuming your API endpoint for top-level categories
+                    .then(res => {
+                        if (!res.ok) {
+                             console.error("Failed to fetch categories API status:", res.status);
+                             // Attempt to read error body if JSON
+                             return res.json().then(err => { throw new Error(err.detail || 'خطا در دریافت دسته‌ها'); }).catch(() => {
+                                  throw new Error('خطا در دریافت دسته‌ها'); // Fallback
+                             });
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Assuming API returns { results: [...] } or just the array [...]
+                        this.categories = data.results || data; // Store fetched categories
+                        console.log("Categories fetched:", this.categories.length);
+                    })
+                    .catch(err => {
+                        console.error("Error fetching categories:", err);
+                        this.error = err.message; // Set error message
+                        this.categories = []; // Clear categories on error
+                    })
+                    .finally(() => {
+                        this.loading = false; // Set loading to false regardless of outcome
+                    });
+            }
+        }
+    }
+</script>
+
+
+<script>
+   // Select search input element and the results container
+   const searchInput = document.getElementById('search-input');
+   const resultBox = document.getElementById('live-search-results');
+
+   // Also get mobile search input and results box
+   const searchInputMobile = document.getElementById('search-input-mobile');
+   const resultBoxMobile = document.getElementById('live-search-results-mobile');
+
+
+   let debounceTimer; // Timer variable for debouncing
+
+
+   // Function to perform the search API call and display results
+   function performSearch(inputElement, resultsBoxElement) {
+        clearTimeout(debounceTimer); // Clear any existing timer
+        const query = inputElement.value.trim(); // Get the search query and trim whitespace
+
+        // Hide results if query is too short
+        if (query.length < 2) {
+            resultsBoxElement.innerHTML = ''; // Clear results
+            resultsBoxElement.classList.add('hidden'); // Hide the box
+            return; // Exit the function
+        }
+
+        // Show loading message
+        resultsBoxElement.innerHTML = '<div class="p-3 text-gray-500">در حال جستجو...</div>';
+        resultsBoxElement.classList.remove('hidden'); // Show the results box
+
+        // Set a timer to wait before making the API call (debouncing)
+        debounceTimer = setTimeout(() => {
+            // Make the fetch request to the search API
+            fetch(`/api/products/?search=${encodeURIComponent(query)}`) // Encode the query parameter
+                .then(res => {
+                    // Check if the response status is OK
+                    if (!res.ok) {
+                         console.error("Search API status:", res.status);
+                         // Attempt to read error response body if JSON
+                         return res.json().then(err => { throw new Error(err.detail || 'پاسخ نامعتبر از سرور'); }).catch(() => {
+                              throw new Error('پاسخ نامعتبر از سرور'); // Fallback error message
+                         });
+                    }
+                    // Parse the response body as JSON
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('Search result:', data);
+                    // *** FIX APPLIED HERE: Access the actual list from data.results ***
+                    // Assuming the API returns a structure like { count: N, next: "...", results: [...] }
+                    // If your API doesn't paginate or has a different structure, adjust this line.
+                    const products = data.results; // Get the array of products from the 'results' key
+
+                    // Check if the products variable is an array and is not empty
+                    if (!Array.isArray(products) || products.length === 0) {
+                        resultsBoxElement.innerHTML = '<div class="p-3 text-gray-500">نتیجه‌ای یافت نشد</div>'; // Display no results message
+                        return; // Exit
+                    }
+
+                    // Generate HTML for each product result using map
+                    const itemsHTML = products.map(product => {
+                        // Generate HTML for product image or a placeholder icon
+                        const imgHTML = product.image
+                            ? `<img src="${product.image}" class="w-14 h-14 object-cover rounded flex-shrink-0" alt="${product.name || 'محصول'}">` // Styled image, flex-shrink-0
+                            : `<div class="w-14 h-14 bg-gray-200 rounded flex items-center justify-center text-gray-400 flex-shrink-0"><i class="fas fa-box fa-lg"></i></div>`; // Styled placeholder icon
+
+                        // Generate HTML for the price display (handling discounts)
+                        const priceHTML = product.price_after_discount
+                            ? `<span class="text-red-600 font-semibold">${Number(product.price_after_discount).toLocaleString('fa-IR')} تومان</span> {# Highlight discounted price #}
+                               <span class="line-through text-gray-400 text-sm ml-2">${Number(product.price).toLocaleString('fa-IR')} تومان</span> {# Show original price #}`
+                            : `<span class="text-gray-700">${Number(product.price).toLocaleString('fa-IR')} تومان</span>`; // Show original price
+
+
+                         // Generate HTML for the store name, if available in the product data
+                         // Assuming your ProductSerializer includes 'store_name' or similar.
+                         const storeNameHTML = product.store_name ? `<div class="text-sm text-gray-500">${product.store_name}</div>` : '';
+
+
+                        // Return the complete HTML for a single search result item (an anchor tag linking to product detail)
+                        return `
+                            <a href="/product/${product.id}/" class="flex items-center space-x-4 space-x-reverse p-3 border-b border-gray-100 hover:bg-gray-50 transition duration-150 last:border-b-0"> {# Styled link with border, hover effect, transition #}
+                                ${imgHTML} {# Insert image or placeholder #}
+                                <div class="flex flex-col justify-center flex-1 min-w-0"> {# Container for text details: flex-1 allows it to grow, min-w-0 prevents overflow #}
+                                    <div class="font-semibold text-gray-800 truncate">${product.name}</div> {# Product name: bold, color, truncate if long #}
+                                    ${storeNameHTML} {# Insert store name if available #}
+                                    <div class="mt-1">${priceHTML}</div> {# Insert price HTML #}
+                                </div>
+                            </a>`;
+                    }).join(''); // Join the array of HTML strings into a single string
+
+                    // Set the generated HTML as the content of the results box
+                    resultsBoxElement.innerHTML = itemsHTML;
+                })
+                .catch(error => {
+                    console.error('Search error:', error); // Log error
+                    resultsBoxElement.innerHTML = `<div class="p-3 text-red-500">${error.message || 'خطا در جستجو'}</div>`; // Display error message
+                });
+        }, 300); // Debounce time in milliseconds
+   }
+
+
+   // Add event listener to the main search input (desktop/large screens)
+   if (searchInput) {
+       searchInput.addEventListener('input', function () {
+           performSearch(searchInput, resultBox);
+       });
+   }
+
+    // Add event listener to the mobile search input (if it exists)
+    if (searchInputMobile) {
+       searchInputMobile.addEventListener('input', function () {
+           // Note: You might need a separate results box for mobile,
+           // or ensure the main resultBox positioning works in mobile layout.
+           // Using resultBoxMobile here based on the HTML provided.
+           performSearch(searchInputMobile, resultBoxMobile);
+       });
+   }
+
+
+   // Hide results box when clicking outside
+   document.addEventListener('click', function (e) {
+       // Check if the click target is not inside the main search input or its results box
+       if (searchInput && resultBox && !searchInput.contains(e.target) && !resultBox.contains(e.target)) {
+           resultBox.classList.add('hidden');
+       }
+        // Check if the click target is not inside the mobile search input or its results box
+       if (searchInputMobile && resultBoxMobile && !searchInputMobile.contains(e.target) && !resultBoxMobile.contains(e.target)) {
+           resultBoxMobile.classList.add('hidden');
+       }
+   });
+
+    // Optional: Hide results box when search input is focused but query is empty
+    if (searchInput) {
+         searchInput.addEventListener('focus', function() {
+              if (this.value.trim().length < 2) {
+                  resultBox.classList.add('hidden');
+              }
+         });
+    }
+     if (searchInputMobile) {
+         searchInputMobile.addEventListener('focus', function() {
+              if (this.value.trim().length < 2) {
+                  resultBoxMobile.classList.add('hidden');
+              }
+         });
+    }
+
+
+    // Logout button event listeners
+    document.getElementById('logout-btn')?.addEventListener('click', function () {
+        fetch('/accounts/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Ensure you have the getCookie function
+            }
+        })
+            .then(res => {
+                if (res.ok) {
+                    window.location.href = '/';  // Redirect to home or login page
+                } else {
+                    // Handle logout error (e.g., show a message)
+                    console.error('Logout failed', res.status);
+                    alert('خروج با خطا مواجه شد.'); // Simple alert
+                }
+            })
+            .catch(err => {
+                console.error('Logout fetch error:', err);
+                alert('مشکلی در خروج پیش آمد.'); // Simple alert
+            });
+    });
+
+     // Add listener for mobile logout button if it's separate
+     document.getElementById('logout-btn-mobile')?.addEventListener('click', function () {
+          // Reuse the same fetch logic as the desktop logout button
+          document.getElementById('logout-btn').click(); // Trigger the desktop button's click event
+     });
+
+
+    // Helper function to get CSRF Token from cookie (Needed for POST requests like logout)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+    // Load cart count function (assuming you have an element with id="cart-count")
+    // This function might be called on page load and after adding items to cart.
+     function loadCartCount() {
+        fetch('/api/cart/', { credentials: 'same-origin' }) // Ensure credentials are sent for sessions
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(cart => {
+                const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+                const cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement) {
+                    cartCountElement.textContent = totalItems > 0 ? totalItems : ''; // Display count if > 0
+                    // Optional: add/remove styling based on count
+                     if (totalItems > 0) {
+                         cartCountElement.classList.add('inline-flex', 'items-center', 'justify-center', 'w-5', 'h-5', 'text-xs', 'font-bold', 'leading-none', 'text-red-100', 'bg-red-600', 'rounded-full', 'ring-1', 'ring-white');
+                     } else {
+                          // Remove all styling classes if count is 0
+                         cartCountElement.className = ''; // Clear all classes set by JS
+                          cartCountElement.classList.add('absolute', '-top-1', '-right-2', 'bg-red-600', 'text-white', 'text-xs', 'w-5', 'h-5', 'flex', 'items-center', 'justify-center', 'rounded-full', 'ring-1', 'ring-white'); // Add back base positioning/sizing/color
+                     }
+                }
+            })
+            .catch(() => {
+                 console.error('Failed to load cart count.');
+                 // Optionally hide or clear the cart count element on error
+                 const cartCountElement = document.getElementById('cart-count');
+                 if (cartCountElement) {
+                     cartCountElement.textContent = '';
+                     cartCountElement.className = ''; // Remove styling on error
+                      cartCountElement.classList.add('absolute', '-top-1', '-right-2', 'bg-red-600', 'text-white', 'text-xs', 'w-5', 'h-5', 'flex', 'items-center', 'justify-center', 'rounded-full', 'ring-1', 'ring-white'); // Add back base positioning/sizing/color
+
+                 }
+            });
+     }
+
+    // Load cart count on page load
+    loadCartCount();
+
+
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

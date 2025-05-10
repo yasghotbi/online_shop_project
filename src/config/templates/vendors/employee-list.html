@@ -1,0 +1,84 @@
+{% extends "vendors/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">کارمندان فروشگاه: {{ store.name }}</h1>
+    <a href="{% url 'employee_register'%}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200 flex items-center whitespace-nowrap">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
+      افزودن کارمند جدید
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نام و نام خانوادگی</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ایمیل</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سمت</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاریخ ثبت</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عملیات</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for employee in employees %}
+          <tr class="hover:bg-gray-50 transition duration-150">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 rounded-full
+                  {% if employee.position == 'manager' %}bg-purple-100 text-purple-800
+                  {% else %}bg-blue-100 text-blue-800{% endif %}
+                  flex items-center justify-center text-lg font-semibold">
+                  {# Display first letter of the first name #}
+                  <span>{{ employee.user.first_name|slice:":1" }}</span>
+                </div>
+                <div class="mr-4">
+                  <div class="text-sm font-medium text-gray-900">{{ employee.user.get_full_name }}</div>
+                  {% if employee.user.phone_number %}
+                    <div class="text-sm text-gray-500">{{ employee.user.phone_number }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+             <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ employee.user.email }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                {% if employee.position == 'manager' %}bg-purple-100 text-purple-800
+                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                {{ employee.position }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ employee.created_at|date:"Y/m/d H:i" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex space-x-2 space-x-reverse">
+                <a href="{% url 'employee-detail' pk=employee.id %}" class="text-blue-600 hover:text-blue-900 hover:underline" title="جزئیات کارمند">جزئیات</a>
+                <a href="{% url 'employee-update' pk=employee.id %}" class="text-yellow-600 hover:text-yellow-900 hover:underline" title="ویرایش کارمند">ویرایش</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            {# Colspan is 5 columns: Name, Email, Position, Created At, Operations #}
+            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+              <div class="flex flex-col items-center justify-center py-12">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <p class="mt-4 text-lg font-medium text-gray-700">کارمندی یافت نشد</p>
+                <p class="mt-1 text-sm text-gray-500">برای افزودن کارمند جدید روی دکمه افزودن کلیک کنید</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

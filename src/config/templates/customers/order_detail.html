@@ -1,0 +1,131 @@
+{% extends "customers/customer-dashboard.html" %}
+{% load static humanize %}
+
+{% block title %}جزئیات سفارش #{{ order.id }} | فروشگاه حرفه‌ای{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Order Summary Card -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 mb-8">
+        <!-- Card Header -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-2 rounded-lg mr-4">
+                        <i class="fas fa-receipt text-blue-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800">جزئیات سفارش #{{ order.id }}</h2>
+                </div>
+                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full
+                    {% if order.status == 'تحویل داده شده' %}bg-green-100 text-green-800
+                    {% elif order.status == 'ارسال شده' %}bg-blue-100 text-blue-800
+                    {% elif order.status == 'در حال پردازش' %}bg-yellow-100 text-yellow-800
+                    {% elif order.status == 'در انتظار پرداخت' %}bg-orange-100 text-orange-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Order Meta -->
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500">تاریخ ثبت سفارش</p>
+                <p class="font-medium text-gray-800">{{ order.created_at|date:"Y/m/d - H:i" }}</p>
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500">مبلغ کل سفارش</p>
+                <p class="font-bold text-blue-600 text-lg">{{ order.total_price|intcomma }} تومان</p>
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500">روش پرداخت</p>
+                <p class="font-medium text-gray-800">{{ order.get_payment_method_display|default:"--" }}</p>
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500">شماره پیگیری</p>
+                <p class="font-medium text-gray-800">{{ order.tracking_number|default:"--" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+        <!-- Table Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-box-open ml-2 text-blue-500"></i>
+                آیتم‌های سفارش
+            </h3>
+        </div>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">محصول</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تعداد</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قیمت واحد</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قیمت کل</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in items %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if item.product.image %}
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <img class="h-10 w-10 rounded-md object-cover" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                </div>
+                                {% endif %}
+                                <div class="mr-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ item.product.name }}</div>
+                                    <div class="text-sm text-gray-500">کد: {{ item.product.sku|default:"--" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ item.quantity }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ item.price|intcomma }} تومان</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-blue-600">{{ item.total_price|intcomma }} تومان</div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-circle ml-2"></i>
+                            آیتمی برای این سفارش ثبت نشده
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="3" class="px-6 py-3 text-right text-sm font-medium text-gray-700">جمع کل:</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-bold text-blue-600">{{ order.total_price|intcomma }} تومان</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-8 flex flex-col sm:flex-row sm:justify-between gap-4">
+        <a href="{% url 'order-list' %}" class="flex items-center justify-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <i class="fas fa-arrow-left ml-2"></i>
+            بازگشت به لیست سفارش‌ها
+        </a>
+        {% if order.status == 'در انتظار پرداخت' %}
+        <a href="#" class="flex items-center justify-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+            <i class="fas fa-credit-card ml-2"></i>
+            پرداخت سفارش
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock dashboard_content %}

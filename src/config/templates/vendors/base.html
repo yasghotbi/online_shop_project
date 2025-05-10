@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}داشبورد فروشگاه{% endblock title %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* body { font-family: 'Vazirmatn', sans-serif; } */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+            padding-bottom: 8px; /* ایجاد فضا برای آندرلاین */
+        }
+        .nav-link.active {
+            color: #2563eb; /* blue-600 */
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0px; /* چسبیده به پایین لینک */
+            right: 0;
+            left: 0;
+            height: 3px;
+            background: #2563eb; /* blue-600 */
+            border-radius: 2px;
+        }
+        /* Dropdown styling for hover (as per your code) */
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .dropdown-menu {
+            pointer-events: none; /* Hide until hover makes it visible */
+        }
+        /* Custom scrollbar for a more refined look (optional) */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7fafc; /* gray-100 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* slate-300 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0; /* gray-500 */
+        }
+        .group.active svg.rotate-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 text-gray-800">
+
+    <header class="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
+        <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+            <div class="flex items-center">
+                <h1 class="text-lg sm:text-xl font-semibold text-gray-800">داشبورد فروشگاه</h1>
+            </div>
+
+            <div class="flex items-center space-x-3 sm:space-x-4 rtl:space-x-reverse">
+                <div class="relative">
+                    <button id="notificationsButton" class="relative p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-gray-100 focus:outline-none transition-colors" aria-label="Notifications">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-red-500 animate-pulse"></span>
+                    </button>
+                    <div id="notificationsDropdown" class="hidden absolute left-0 sm:left-auto right-0 mt-2 w-72 sm:w-80 bg-white rounded-md shadow-xl py-1 z-[60] border border-gray-200 max-h-96 overflow-y-auto">
+                        <div class="px-4 py-3 border-b">
+                            <p class="text-sm font-semibold text-gray-700">اعلان‌ها</p>
+                        </div>
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+                                <p class="font-medium">سفارش جدید #12345</p><p class="text-xs text-gray-500">دقایقی پیش</p>
+                            </a>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm font-medium text-center text-blue-600 hover:bg-gray-100 border-t transition-colors">مشاهده همه</a>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button id="userMenuButton" class="flex items-center text-sm group focus:outline-none p-1 rounded-full focus:ring-2 focus:ring-offset-1 focus:ring-blue-500">
+                        {% if request.user.is_authenticated and request.user.profile.avatar %}
+                            <img src="{{ request.user.profile.avatar.url }}" alt="آواتار" class="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-blue-400 transition-colors">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="آواتار پیش فرض" class="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-blue-400 transition-colors">
+                        {% endif %}
+                        <span class="mr-1.5 hidden md:block font-medium text-gray-700 group-hover:text-blue-600 transition-colors">{{ request.user.get_full_name|default:request.user.username }}</span>
+                        <svg class="h-4 w-4 ml-1 hidden md:block text-gray-500 group-hover:text-gray-700 transition-transform transform rotate-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div id="userMenuDropdown" class="hidden absolute left-0 sm:left-auto right-0 mt-2 w-56 bg-white rounded-md shadow-xl py-1 z-[60] border border-gray-200">
+                        <div class="px-4 py-3 border-b border-gray-200">
+                            <p class="text-sm font-semibold text-gray-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
+                            <p class="text-xs text-gray-500 truncate">{{ request.user.email|default:"" }}</p>
+                        </div>
+                        {# Only show "پروفایل شما" if the user is NOT the store owner #}
+                        {% if store and request.user != store.owner %}
+                             <a href="{%  url 'profile' request.user.employee.pk %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">پروفایل شما</a>
+                        {% endif %}
+
+
+                        {% if store and request.user == store.owner %}
+                            <a href="{% url 'store-profile' pk=store.pk %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">تنظیمات فروشگاه</a>
+                            <a href="{% url 'summary'  %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">بازخورد فروشگاه</a>{# Assuming you have a URL named 'store-feedback' #}
+                        {% endif %}
+
+                        <hr class="my-1 border-gray-200">
+                        <button id="logoutButton" class="w-full text-right block px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors focus:outline-none">
+                            خروج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="px-4 sm:px-6 py-1 border-t border-gray-200 bg-white">
+            <div class="flex items-center justify-between">
+                <button id="mobileMenuButton" class="lg:hidden text-gray-600 p-2 -mr-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-expanded="false">
+                    <span class="sr-only">باز کردن منوی اصلی</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+
+                <div class="hidden lg:flex flex-grow items-center space-x-5 rtl:space-x-reverse">
+
+                    <a href="{% url 'product-list-vendor' %}"
+                       class="nav-link px-2 py-2 text-sm font-medium {% if request.resolver_match.url_name == 'product-list-vendor' %}active{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+                        محصولات
+                    </a>
+                    <a href="{% url 'product-create' %}"
+                       class="nav-link px-2 py-2 text-sm font-medium {% if request.resolver_match.url_name == 'product-create' %}active{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+                        ثبت محصول
+                    </a>
+
+                    {% if store and request.user == store.owner %}
+                    <div class="dropdown relative">
+                        <button class="nav-link px-2 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center
+                                       {% if request.resolver_match.url_name == 'employee-list' or request.resolver_match.url_name == 'employee_register' %}active{% endif %}">
+                            مدیریت کارمندان
+                            <svg class="w-4 h-4 mr-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu absolute top-full rtl:right-0 ltr:left-0 w-48 bg-white shadow-lg rounded-b-lg mt-0 py-1 opacity-0 invisible transition-all duration-300 transform -translate-y-2 border border-t-0 border-gray-200">
+                            <a href="{% url 'employee-list' %}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors">
+                                لیست کارمندان
+                            </a>
+                            <a href="{% url 'employee_register' %}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors">
+                                ثبت کارمند جدید
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'discount-list' %}"
+                       class="nav-link px-2 py-2 text-sm font-medium {% if request.resolver_match.url_name == 'discount-list' %}active{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+                        تخفیف‌ها
+                    </a>
+                    <a href="{% url 'store-orders' %}"
+                       class="nav-link px-2 py-2 text-sm font-medium {% if request.resolver_match.url_name == 'store-orders' %}active{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+                        سفارشات
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div id="mobileMenu" class="lg:hidden hidden border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                {# Only show "پروفایل شما" if the user is NOT the store owner #}
+                {% if store and request.user != store.owner %}
+                    <a href="{% url 'profile' request.user.employee.pk %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">پروفایل شما</a>
+                {% endif %}
+
+                <a href="{% url 'product-list-vendor' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">محصولات</a>
+                <a href="{% url 'product-create' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">ثبت محصول</a>
+
+                {% if store and request.user == store.owner %}
+                <div>
+                    <p class="px-3 pt-2 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">مدیریت کارمندان</p>
+                    <a href="{% url 'employee-list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">لیست کارمندان</a>
+                    <a href="{% url 'employee_register' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">ثبت کارمند جدید</a>
+                </div>
+                <a href="{% url 'store-profile' pk=store.pk %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">پروفایل فروشگاه</a>
+                <a href="{% url 'summary' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">بازخورد فروشگاه</a>{# Assuming you have a URL named 'store-feedback' #}
+                {% endif %}
+
+                <a href="{% url 'discount-list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">تخفیف‌ها</a>
+                <a href="{% url 'store-orders' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-600 transition-colors">سفارشات</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-100">
+        {% block content %}
+        <div class="bg-white p-6 rounded-lg shadow-xl">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">به داشبورد خود خوش آمدید!</h2>
+            <p class="text-gray-600">محتوای اصلی صفحه شما در اینجا قرار می‌گیرد.</p>
+        </div>
+        {% endblock %}
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-4">
+        <p class="text-center text-sm text-gray-500">
+            &copy; {% now "Y" %} {{ store.name|default:"فروشگاه شما" }}. تمامی حقوق محفوظ است.
+        </p>
+    </footer>
+
+    {% block extra_js %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const expanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
+                mobileMenuButton.setAttribute('aria-expanded', !expanded);
+                mobileMenu.classList.toggle('hidden');
+                mobileMenuButton.classList.toggle('bg-gray-200');
+            });
+        }
+
+        // Generic Dropdown Toggle Function (for click-triggered dropdowns)
+        function setupClickDropdown(button, dropdown) {
+            if (!button || !dropdown) return;
+
+            button.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                // Hide all other open JS-controlled dropdowns
+                document.querySelectorAll('.absolute.mt-2.z-\\[60\\]').forEach(el => {
+                    if (el !== dropdown && !el.classList.contains('hidden')) {
+                       el.classList.add('hidden');
+                       // also remove active class from their respective buttons
+                       const otherButtonId = el.id.replace('Dropdown', 'Button');
+                       const otherButton = document.getElementById(otherButtonId);
+                       if(otherButton) otherButton.classList.remove('active');
+                    }
+                });
+
+                dropdown.classList.toggle('hidden');
+                button.classList.toggle('active'); // For styling the button, e.g., rotating arrow
+            });
+        }
+
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        setupClickDropdown(userMenuButton, userMenuDropdown);
+
+        const notificationsButton = document.getElementById('notificationsButton');
+        const notificationsDropdown = document.getElementById('notificationsDropdown');
+        setupClickDropdown(notificationsButton, notificationsDropdown);
+
+        // Hide dropdowns and mobile menu when clicking outside
+        document.addEventListener('click', (event) => {
+            // Click-triggered dropdowns
+            if (userMenuDropdown && !userMenuDropdown.classList.contains('hidden') && !userMenuButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
+                userMenuDropdown.classList.add('hidden');
+                userMenuButton.classList.remove('active');
+            }
+            if (notificationsDropdown && !notificationsDropdown.classList.contains('hidden') && !notificationsButton.contains(event.target) && !notificationsDropdown.contains(event.target)) {
+                notificationsDropdown.classList.add('hidden');
+                notificationsButton.classList.remove('active');
+            }
+            // Mobile menu
+            if (mobileMenu && mobileMenuButton && !mobileMenu.classList.contains('hidden') && !mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
+                mobileMenu.classList.add('hidden');
+                mobileMenuButton.classList.remove('bg-gray-200');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Logout Functionality
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch("{% url 'logout' %}", { // URL پیش‌فرض Django Allauth
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include'
+                    });
+
+                    if (response.ok) {
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                        } else {
+                            const data = await response.json().catch(() => null);
+                            if (data && data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            } else {
+                                window.location.href = "{% url 'login' %}"; // فال‌بک به صفحه لاگین
+                            }
+                        }
+                    } else {
+                        console.error('Logout failed:', response);
+                        alert('خروج ناموفق بود. لطفاً دوباره تلاش کنید.');
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('خطا در اتصال به سرور برای خروج.');
+                }
+            });
+        }
+    });
+    </script>
+
+    {% endblock %}
+</body>
+</html>

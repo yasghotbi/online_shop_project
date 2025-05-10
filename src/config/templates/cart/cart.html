@@ -1,0 +1,127 @@
+<!-- cart.html -->
+{% extends 'website/base.html' %}
+
+{% block title %}سبد خرید{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-6 text-center">🛒 سبد خرید شما</h2>
+    <div id="cart-container" class="text-center text-gray-600">در حال بارگذاری...</div>
+
+    <div class="flex justify-between mt-6">
+        <button id="clear-cart" class="bg-red-500 text-white py-2 px-6 rounded-lg hover:bg-red-700 transition">پاک کردن کل سبد</button>
+        <button id="checkout-btn" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition">ثبت سفارش</button>
+    </div>
+</div>
+
+
+{% block extra_scripts %}
+<script>
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+
+function renderCart(data) {
+    const container = document.getElementById('cart-container');
+    if (!data.items || !data.items.length) {
+        container.innerHTML = '<p>سبد خرید شما خالی است.</p>';
+        return;
+    }
+
+    let html = `<table class="min-w-full bg-white shadow-lg rounded-lg overflow-hidden"><thead><tr>
+                    <th class="py-3 px-6 text-left">محصول</th>
+                    <th class="py-3 px-6 text-left">تعداد</th>
+                    <th class="py-3 px-6 text-left">قیمت واحد</th>
+                    <th class="py-3 px-6 text-left">قیمت کل</th>
+                    <th class="py-3 px-6 text-center">عملیات</th>
+                </tr></thead><tbody>`;
+
+    data.items.forEach(item => {
+        html += `<tr data-product="${item.product}" class="border-t">
+                    <td class="py-3 px-6">${item.product_name}</td>
+                    <td class="py-3 px-6"><input type="number" class="qty-input border border-gray-300 rounded-lg p-2 text-center w-16" value="${item.quantity}" min="1"></td>
+                    <td class="py-3 px-6">${item.product_price.toLocaleString('fa-IR')} تومان</td>
+                    <td class="py-3 px-6">${item.item_total_price.toLocaleString('fa-IR')} تومان</td>
+                    <td class="py-3 px-6 text-center"><button class="delete-btn bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-700 transition">حذف</button></td>
+                </tr>`;
+    });
+
+    html += `</tbody><tfoot><tr>
+                <td colspan="2" class="py-3 px-6 text-left"><strong>مجموع تعداد:</strong> ${data.total_quantity}</td>
+                <td colspan="2" class="py-3 px-6 text-left"><strong>مجموع مبلغ:</strong> ${data.total_price.toLocaleString('fa-IR')} تومان</td>
+                <td class="py-3 px-6"></td>
+            </tr></tfoot></table>`;
+
+    container.innerHTML = html;
+    setupCartEvents();
+}
+
+function setupCartEvents() {
+    document.querySelectorAll('.qty-input').forEach(input => {
+        input.addEventListener('change', e => {
+            const tr = e.target.closest('tr');
+            const productId = tr.dataset.product;
+            const qty = parseInt(e.target.value) || 1;
+            fetch(`/api/cart/${productId}/`, {
+                method: 'PATCH',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ quantity: qty })
+            })
+            .then(() => fetchCart())
+            .catch(() => alert('خطا در بروزرسانی تعداد'));
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            const productId = e.target.closest('tr').dataset.product;
+            fetch(`/api/cart/${productId}/`, {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            })
+            .then(() => fetchCart())
+            .catch(() => alert('خطا در حذف محصول'));
+        });
+    });
+}
+
+function fetchCart() {
+    fetch('/api/cart/', { credentials: 'same-origin' })
+        .then(r => {
+            if (!r.ok) throw new Error();
+            return r.json();
+        })
+        .then(data => renderCart(data))
+        .catch(() => {
+            document.getElementById('cart-container').innerHTML = '<p class="text-red-500">خطا در دریافت سبد خرید</p>';
+        });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('checkout-btn').addEventListener('click', () => {
+        window.location.href = '/account/order';
+    });
+
+    document.getElementById('clear-cart').addEventListener('click', () => {
+        if (confirm('پاک کردن کل سبد؟')) {
+            fetch('/api/cart/clear/', {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            })
+            .then(() => fetchCart())
+            .catch(() => alert('خطا در پاک‌سازی سبد'));
+        }
+    });
+
+    fetchCart();
+});
+</script>
+{% endblock %}
+{% endblock %}

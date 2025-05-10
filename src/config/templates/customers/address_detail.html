@@ -1,0 +1,70 @@
+{% extends "customers/customer-dashboard.html" %}
+{% load static %}
+
+{% block title %}پروفایل مشتری | فروشگاه حرفه‌ای{% endblock %}
+
+{% block dashboard_content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جزئیات آدرس | {{ address.title }}</title>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                <!-- Header -->
+                <div class="bg-indigo-600 px-6 py-4">
+                    <h1 class="text-xl md:text-2xl font-bold text-white">جزئیات آدرس</h1>
+                </div>
+
+                <!-- Address Details -->
+                <div class="p-6 space-y-4">
+                    <div class="border-b border-gray-200 pb-4">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">{{ address.title }}</h2>
+                        <p class="text-gray-600 flex items-start">
+                            <span class="inline-block ml-2 text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                            {{ address.address_text }}
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-sm text-gray-500">کد پستی</p>
+                            <p class="font-medium text-gray-800">{{ address.post_code }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-sm text-gray-500">شهر</p>
+                            <p class="font-medium text-gray-800">{{ address.city }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="bg-gray-50 px-6 py-4 flex flex-wrap justify-between gap-3">
+                    <a href="{% url 'address-update' pk=address.pk %}"
+                       class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        ویرایش آدرس
+                    </a>
+
+                    <a href="{% url 'address-list' %}"
+                       class="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        بازگشت به لیست
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+{% endblock dashboard_content %}
+

@@ -1,0 +1,89 @@
+{% extends 'vendors/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-md mt-12 space-y-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b pb-4">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-store text-blue-500"></i>
+            ویرایش اطلاعات فروشگاه
+        </h1>
+    </div>
+
+    <!-- Success Message -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="p-4 rounded-lg text-sm font-medium text-green-800 bg-green-50 border border-green-200">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 p-4 rounded-lg text-red-700 text-sm">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <ul class="text-xs text-red-600 mt-1 space-y-1">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-4 pt-6 border-t border-gray-100">
+            <a href="{% url 'store-profile' store.pk %}" class="btn-secondary">
+                انصراف
+            </a>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-check-circle mr-2"></i> ذخیره تغییرات
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-input {
+        @apply w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-600 transition;
+    }
+
+    .btn-secondary {
+        @apply px-5 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 rounded-lg transition;
+    }
+</style>
+{% endblock %}

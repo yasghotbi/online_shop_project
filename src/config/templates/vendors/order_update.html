@@ -1,0 +1,77 @@
+{% extends "vendors/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="bg-[#141b2a] shadow-2xl rounded-xl overflow-hidden border border-[#1f2940]">
+        <!-- Header -->
+        <div class="px-6 py-4 bg-gradient-to-r from-[#1f2940] to-[#1a2235] border-b border-[#1f2940]">
+            <h2 class="text-xl font-bold text-white">تغییر وضعیت سفارش #{{ order.id }}</h2>
+        </div>
+
+        <!-- Current Status -->
+        <div class="px-6 py-4 border-b border-[#1f2940] bg-[#1a2235]">
+            <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                <div class="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-blue-200">وضعیت فعلی</h3>
+                    <p class="text-lg font-semibold text-gray-100">{{ order.get_status_display }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="px-6 py-4 bg-[#1a2235]">
+            {% csrf_token %}
+            <div class="mb-6">
+                <label for="status" class="block text-sm font-medium text-blue-200 mb-2">وضعیت جدید</label>
+                <div class="relative">
+                    <select name="status" id="status" class="block appearance-none w-full bg-[#1f2940] border border-[#2a3655] text-gray-100 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300">
+                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>در انتظار</option>
+                        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>در حال پردازش</option>
+                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>تحویل داده شده</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-2 text-blue-200">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 rtl:space-x-reverse">
+                <a href="{% url 'store-orders-detail' order.pk %}" class="px-6 py-2 border border-[#2a3655] rounded-lg text-blue-200 hover:bg-[#1f2940] transition-colors">
+                    انصراف
+                </a>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-all shadow-lg">
+                    ثبت تغییرات
+                </button>
+            </div>
+        </form>
+
+        <!-- Messages -->
+        {% if error %}
+        <div class="px-6 py-4 bg-red-900/30 border-t border-red-800">
+            <div class="flex items-center space-x-2 rtl:space-x-reverse text-red-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium">{{ error }}</span>
+            </div>
+        </div>
+        {% elif success %}
+        <div class="px-6 py-4 bg-green-900/30 border-t border-green-800">
+            <div class="flex items-center space-x-2 rtl:space-x-reverse text-green-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium">{{ success }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

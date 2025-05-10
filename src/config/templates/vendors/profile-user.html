@@ -1,0 +1,136 @@
+{% extends 'vendors/base.html' %}
+{% load static i18n %}
+
+{% block title %}
+    {% trans "پروفایل کاربری" %} - {{ user.user.get_full_name|default:user.user.username }}
+{% endblock title %}
+
+{% block page_title %}
+    {% trans "پروفایل کاربری" %}
+{% endblock page_title %}
+
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="#">{% trans "داشبورد" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "پروفایل کاربری" %}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow-md rounded-2xl p-6 mb-10">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                {% if user.user.profile.avatar %}
+                    <img src="{{ user.user.profile.avatar.url }}"
+                         alt="{% trans 'آواتار' %}"
+                         class="w-24 h-24 rounded-full border-4 border-blue-100 object-cover shadow-md" />
+                {% else %}
+                    <div class="w-24 h-24 bg-gray-300 text-gray-700 text-3xl font-bold flex items-center justify-center rounded-full border-4 border-gray-400 shadow-md">
+                        {{ user.user.username|slice:":2"|upper }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        {{ user.user.get_full_name|default:user.user.username }}
+                    </h1>
+                    <p class="mt-1 text-sm text-gray-500">{{ user.user.email|default:_("ایمیل ثبت نشده") }}</p>
+                    <span class="inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full
+                                 {% if user.user.is_active %}
+                                    bg-green-100 text-green-800
+                                 {% else %}
+                                    bg-red-100 text-red-700
+                                 {% endif %}">
+                        {% if user.user.is_active %}{% trans "فعال" %}{% else %}{% trans "غیرفعال" %}{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <a href="{% url 'profile-update' pk=request.user.pk %}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+                {% trans "ویرایش پروفایل" %}
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl shadow p-6">
+                <h3 class="text-lg font-semibold border-b pb-3 mb-4 text-gray-800">{% trans "اطلاعات تماس" %}</h3>
+                <ul class="space-y-4 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <span class="w-6 h-6 mr-2 text-gray-400"><i class="fas fa-envelope"></i></span>
+                        <div>
+                            <p class="font-medium text-gray-500">{% trans "ایمیل" %}</p>
+                            <p class="break-all">{{ user.user.email|default:_("ثبت نشده") }}</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="w-6 h-6 mr-2 text-gray-400"><i class="fas fa-phone-alt"></i></span>
+                        <div>
+                            <p class="font-medium text-gray-500">{% trans "شماره تلفن" %}</p>
+                            <p dir="ltr">{{ user.user.phone_number|default:_("ثبت نشده") }}</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            {% if user.user.profile.bio %}
+            <div class="bg-white rounded-2xl shadow p-6">
+                <h3 class="text-lg font-semibold border-b pb-3 mb-4 text-gray-800">{% trans "درباره من" %}</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">{{ user.user.profile.bio|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-2xl shadow p-6">
+                <h3 class="text-lg font-semibold border-b pb-3 mb-4 text-gray-800">{% trans "جزئیات حساب کاربری و فروشگاه" %}</h3>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                    <div>
+                        <dt class="text-gray-500 font-medium">{% trans "نام کاربری" %}</dt>
+                        <dd class="mt-1 text-gray-900">{{ user.user.username }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500 font-medium">{% trans "نام" %}</dt>
+                        <dd class="mt-1 text-gray-900">{{ user.user.first_name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500 font-medium">{% trans "نام خانوادگی" %}</dt>
+                        <dd class="mt-1 text-gray-900">{{ user.user.last_name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500 font-medium">{% trans "نام فروشگاه" %}</dt>
+                        <dd class="mt-1 text-gray-900">{{ user.store.name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500 font-medium">{% trans "تاریخ عضویت در فروشگاه" %}</dt>
+                        <dd class="mt-1 text-gray-900">
+                            {{ user.user.date_joined|date:"d F Y" }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500 font-medium">{% trans "آخرین ورود" %}</dt>
+                        <dd class="mt-1 text-gray-900">
+                            {% if user.user.last_login %}
+                                {{ user.user.last_login|timesince }} {% trans "پیش" %} ({{ user.user.last_login|date:"Y/m/d H:i" }})
+                            {% else %}
+                                {% trans "تا کنون وارد نشده است" %}
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// در صورت نیاز به جاوااسکریپت خاص، اینجا اضافه کنید
+</script>
+{% endblock extra_js %}

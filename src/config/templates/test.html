@@ -1,0 +1,897 @@
+{% extends 'website/base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <!-- هدر ناوبری -->
+  <nav class="flex items-center mb-8" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-4 space-x-reverse">
+      <li>
+        <div>
+          <a href="/" class="text-gray-400 hover:text-gray-500">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+          </a>
+        </div>
+      </li>
+      <li>
+        <div class="flex items-center">
+          <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+          </svg>
+          <a href="/products/" class="mr-4 text-sm font-medium text-gray-500 hover:text-gray-700">محصولات</a>
+        </div>
+      </li>
+      <li>
+        <div class="flex items-center">
+          <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+          </svg>
+          <span class="mr-4 text-sm font-medium text-gray-500" id="product-category"></span>
+        </div>
+      </li>
+      <li>
+        <div class="flex items-center">
+          <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+          </svg>
+          <span class="mr-4 text-sm font-medium text-gray-500" id="product-name-breadcrumb"></span>
+        </div>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- بخش اصلی محصول -->
+  <div class="lg:grid lg:grid-cols-2 lg:gap-16">
+    <!-- گالری تصاویر محصول -->
+    <div class="mb-8 lg:mb-0">
+      <div class="relative rounded-xl overflow-hidden bg-gray-50 mb-4 h-96">
+        <img id="main-product-image" src="" alt="" class="w-full h-full object-contain transition-opacity duration-300">
+        <!-- تگ‌های وضعیت -->
+        <div class="absolute top-4 left-4 flex flex-col space-y-2">
+          <span id="discount-badge" class="hidden bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg transform rotate-3">% تخفیف</span>
+          <span id="stock-badge" class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg transform -rotate-3"></span>
+        </div>
+      </div>
+
+      <!-- گالری کوچک تصاویر -->
+      <div id="thumbnail-gallery" class="grid grid-cols-4 gap-3">
+        <!-- تصاویر کوچک در اسکریپت پر می‌شوند -->
+      </div>
+    </div>
+
+    <!-- اطلاعات محصول -->
+    <div>
+      <div class="border-b border-gray-200 pb-6 mb-6">
+        <h1 id="product-name" class="text-3xl font-extrabold tracking-tight text-gray-900 mb-2"></h1>
+        <div class="flex items-center mb-4">
+          <div id="product-rating" class="flex items-center">
+            <!-- ستاره‌های امتیاز -->
+          </div>
+          <a href="#reviews" class="mr-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">
+            <span id="review-count">0</span> نظر
+          </a>
+        </div>
+      </div>
+
+      <!-- بخش قیمت -->
+      <div id="price-section" class="mb-6">
+        <div class="flex items-center">
+          <span id="final-price" class="text-3xl font-bold text-gray-900"></span>
+          <span id="original-price" class="mr-3 text-xl text-gray-500 line-through hidden"></span>
+          <span id="discount-percentage" class="bg-red-100 text-red-800 text-sm font-medium px-2 py-0.5 rounded hidden"></span>
+        </div>
+        <div class="mt-1 text-sm text-gray-500">
+          <span id="tax-info">شامل مالیات بر ارزش افزوده</span>
+        </div>
+      </div>
+
+      <!-- توضیحات کوتاه -->
+      <div id="short-description" class="prose prose-sm text-gray-500 mb-6">
+        <!-- در اسکریپت پر می‌شود -->
+      </div>
+
+      <!-- فرم افزودن به سبد خرید -->
+      <div class="border-t border-gray-200 pt-6">
+        <div class="flex items-center mb-6">
+          <div class="mr-6">
+            <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">تعداد</label>
+            <div class="relative flex items-center">
+              <button type="button" id="decrement-quantity" class="quantity-button border border-gray-300 rounded-r-md px-3 h-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                </svg>
+              </button>
+              <input type="number" id="quantity" value="1" min="1" class="w-16 h-10 text-center border-t border-b border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+              <button type="button" id="increment-quantity" class="quantity-button border border-gray-300 rounded-l-md px-3 h-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex-1">
+            <button id="add-to-cart" class="w-full flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-700 py-3 px-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-md">
+              <svg class="h-5 w-5 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              افزودن به سبد خرید
+            </button>
+          </div>
+        </div>
+
+        <!-- دکمه‌های اضافی -->
+        <div class="flex space-x-3 space-x-reverse">
+          <button id="add-to-wishlist" class="flex items-center justify-center p-2 text-gray-400 hover:text-gray-500 rounded-full border border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+          <button id="share-product" class="flex items-center justify-center p-2 text-gray-400 hover:text-gray-500 rounded-full border border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- تب‌های اطلاعات محصول -->
+  <div class="mt-16">
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex space-x-8 space-x-reverse">
+        <button id="description-tab" class="tab-button border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          توضیحات کامل
+        </button>
+        <button id="specs-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          مشخصات فنی
+        </button>
+        <button id="reviews-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          امتیازات (<span id="reviews-tab-count">0</span>)
+        </button>
+      </nav>
+    </div>
+
+    <!-- محتوای تب‌ها -->
+    <div class="py-8">
+      <div id="description-content" class="tab-content active">
+        <div class="prose prose-indigo max-w-none text-gray-500">
+          <h3 class="text-gray-900">توضیحات محصول</h3>
+          <div id="product-description"></div>
+        </div>
+      </div>
+
+      <div id="specs-content" class="tab-content hidden">
+        <div class="overflow-hidden border border-gray-200 rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <tbody id="specs-table" class="bg-white divide-y divide-gray-200">
+              <!-- در اسکریپت پر می‌شود -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="reviews-content" class="tab-content hidden">
+        <div class="space-y-12">
+          <div id="reviews-list" class="space-y-8">
+            <!-- نظرات در اسکریپت پر می‌شوند -->
+          </div>
+
+          <!-- فرم ثبت نظر -->
+          <div id="review-section" class="border-t border-gray-200 pt-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-6">ثبت نظر شما</h3>
+
+            <div id="review-form" class="hidden max-w-lg">
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">امتیاز شما</label>
+                <div id="rating-stars" class="flex flex-row-reverse justify-start">
+                  <span data-value="5" class="text-3xl text-gray-300 hover:text-yellow-400 cursor-pointer mx-1 transition-colors">★</span>
+                  <span data-value="4" class="text-3xl text-gray-300 hover:text-yellow-400 cursor-pointer mx-1 transition-colors">★</span>
+                  <span data-value="3" class="text-3xl text-gray-300 hover:text-yellow-400 cursor-pointer mx-1 transition-colors">★</span>
+                  <span data-value="2" class="text-3xl text-gray-300 hover:text-yellow-400 cursor-pointer mx-1 transition-colors">★</span>
+                  <span data-value="1" class="text-3xl text-gray-300 hover:text-yellow-400 cursor-pointer mx-1 transition-colors">★</span>
+                </div>
+              </div>
+
+              <div class="mb-6">
+                <label for="review-text" class="block text-sm font-medium text-gray-700 mb-2">نظر شما</label>
+                <textarea id="review-text" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"></textarea>
+              </div>
+
+              <button id="submit-review" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                ثبت نظر
+              </button>
+
+              <div id="review-error" class="mt-2 text-sm text-red-600"></div>
+            </div>
+
+            <div id="login-prompt" class="hidden bg-blue-50 p-4 rounded-lg">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div class="mr-3">
+                  <h3 class="text-sm font-medium text-blue-800">برای ثبت نظر نیاز به ورود دارید</h3>
+                  <div class="mt-2 text-sm text-blue-700">
+                    <p>برای ثبت نظر در مورد این محصول، لطفاً وارد حساب کاربری خود شوید.</p>
+                  </div>
+                  <div class="mt-4">
+                    <div class="-mx-2 -my-1.5 flex">
+                      <button onclick="redirectToLogin()" class="bg-blue-50 px-2 py-1.5 rounded-md text-sm font-medium text-blue-800 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-50 focus:ring-blue-600">
+                        ورود به حساب کاربری
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- محصولات مرتبط -->
+  <section class="mt-16">
+    <h2 class="text-2xl font-extrabold tracking-tight text-gray-900 mb-8">محصولات مرتبط</h2>
+    <div id="related-products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- در اسکریپت پر می‌شود -->
+    </div>
+  </section>
+</div>
+
+<style>
+  /* انیمیشن‌ها و استایل‌های سفارشی */
+  .tab-content {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .quantity-button {
+    transition: all 0.2s ease;
+  }
+
+  .quantity-button:hover {
+    background-color: #f3f4f6;
+  }
+
+  .quantity-button:active {
+    transform: scale(0.95);
+  }
+
+  #main-product-image {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .thumbnail {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .thumbnail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .thumbnail.active {
+    border: 2px solid #6366f1;
+  }
+
+  .product-card {
+    transition: all 0.3s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .floating-badge {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+  }
+</style>
+
+<script>
+// متغیرهای جهانی
+let currentProductId = null;
+let selectedRating = 0;
+let productImages = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  currentProductId = getProductId();
+  if (!currentProductId) {
+    window.location.href = '/';
+    return;
+  }
+
+  // راه‌اندازی تب‌ها
+  setupTabs();
+
+  // راه‌اندازی ستاره‌های امتیازدهی
+  setupRatingStars();
+
+  // بارگذاری اطلاعات محصول
+  loadProductDetails(currentProductId);
+
+  // بارگذاری تعداد آیتم‌های سبد خرید
+  loadCartCount();
+
+  // راه‌اندازی دکمه‌های افزایش/کاهش تعداد
+  setupQuantityButtons();
+
+  // راه‌اندازی دکمه اشتراک‌گذاری
+  setupShareButton();
+});
+
+function getProductId() {
+  const pathParts = window.location.pathname.split('/');
+  const productIndex = pathParts.indexOf('product');
+  return productIndex !== -1 && pathParts.length > productIndex + 1 ? pathParts[productIndex + 1] : null;
+}
+
+function setupTabs() {
+  const tabs = {
+    description: {
+      tab: document.getElementById('description-tab'),
+      content: document.getElementById('description-content')
+    },
+    specs: {
+      tab: document.getElementById('specs-tab'),
+      content: document.getElementById('specs-content')
+    },
+    reviews: {
+      tab: document.getElementById('reviews-tab'),
+      content: document.getElementById('reviews-content')
+    }
+  };
+
+  // اضافه کردن event listener برای هر تب
+  Object.entries(tabs).forEach(([key, {tab, content}]) => {
+    tab.addEventListener('click', () => {
+      // مخفی کردن همه تب‌ها
+      Object.values(tabs).forEach(t => t.content.classList.add('hidden'));
+      Object.values(tabs).forEach(t => t.tab.classList.remove('border-indigo-500', 'text-indigo-600'));
+      Object.values(tabs).forEach(t => t.tab.classList.add('border-transparent', 'text-gray-500'));
+
+      // نمایش تب انتخاب شده
+      content.classList.remove('hidden');
+      tab.classList.remove('border-transparent', 'text-gray-500');
+      tab.classList.add('border-indigo-500', 'text-indigo-600');
+
+      // اگر تب نظرات است، مطمئن شویم نظرات بارگذاری شده‌اند
+      if (key === 'reviews') {
+        loadReviews(currentProductId);
+      }
+    });
+  });
+}
+
+function setupRatingStars() {
+  const stars = document.querySelectorAll('#rating-stars span');
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.dataset.value);
+      updateRatingStars();
+    });
+  });
+}
+
+function updateRatingStars() {
+  const stars = document.querySelectorAll('#rating-stars span');
+  stars.forEach(star => {
+    const value = parseInt(star.dataset.value);
+    star.classList.toggle('text-yellow-400', value <= selectedRating);
+    star.classList.toggle('text-gray-300', value > selectedRating);
+  });
+}
+
+function setupQuantityButtons() {
+  const decrementBtn = document.getElementById('decrement-quantity');
+  const incrementBtn = document.getElementById('increment-quantity');
+  const quantityInput = document.getElementById('quantity');
+
+  decrementBtn.addEventListener('click', () => {
+    let value = parseInt(quantityInput.value) || 1;
+    if (value > 1) {
+      quantityInput.value = value - 1;
+    }
+  });
+
+  incrementBtn.addEventListener('click', () => {
+    let value = parseInt(quantityInput.value) || 1;
+    quantityInput.value = value + 1;
+  });
+}
+
+function setupShareButton() {
+  const shareBtn = document.getElementById('share-product');
+  shareBtn.addEventListener('click', () => {
+    if (navigator.share) {
+      navigator.share({
+        title: document.getElementById('product-name').textContent,
+        text: 'این محصول را در فروشگاه ما ببینید',
+        url: window.location.href,
+      })
+      .catch(error => console.log('Error sharing:', error));
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      const shareUrl = `https://wa.me/?text=${encodeURIComponent(`محصول ${document.getElementById('product-name').textContent} را در ${window.location.href} ببینید`)}`;
+      window.open(shareUrl, '_blank');
+    }
+  });
+}
+
+async function loadProductDetails(productId) {
+  try {
+    const response = await fetch(`/api/products/${productId}/`, { credentials: 'same-origin' });
+    if (!response.ok) throw new Error('خطا در دریافت اطلاعات محصول');
+
+    const product = await response.json();
+    renderProductDetails(product);
+
+    // بارگذاری محصولات مرتبط
+    if (product.related_products && product.related_products.length > 0) {
+      renderRelatedProducts(product.related_products);
+    }
+  } catch (error) {
+    console.error('Error loading product:', error);
+    alert('خطا در بارگذاری اطلاعات محصول. لطفاً صفحه را رفرش کنید.');
+  }
+}
+
+function renderProductDetails(product) {
+  // نمایش اطلاعات پایه
+  document.getElementById('product-name').textContent = product.name;
+  document.getElementById('product-name-breadcrumb').textContent = product.name;
+  document.getElementById('product-category').textContent = product.category || 'دسته‌بندی نشده';
+  document.getElementById('product-description').innerHTML = product.description || 'توضیحاتی برای این محصول ثبت نشده است.';
+  document.getElementById('short-description').innerHTML = product.short_description || '';
+
+  // نمایش تصاویر محصول
+  renderProductImages(product);
+
+  // نمایش قیمت و تخفیف
+  renderProductPrice(product);
+
+  // نمایش وضعیت موجودی
+  renderStockStatus(product);
+
+  // نمایش امتیاز محصول
+  renderProductRating(product);
+
+  // نمایش مشخصات فنی
+  renderProductSpecs(product);
+
+  // راه‌اندازی دکمه افزودن به سبد خرید
+  setupAddToCart(product.id);
+
+  // بررسی وضعیت کاربر برای فرم نظر
+  checkUserStatus();
+}
+
+function renderProductImages(product) {
+  const mainImage = document.getElementById('main-product-image');
+  const thumbnailGallery = document.getElementById('thumbnail-gallery');
+
+  // ذخیره تمام تصاویر محصول
+  productImages = [product.image].concat(product.additional_images || []);
+
+  // نمایش تصویر اصلی
+  mainImage.src = product.image;
+  mainImage.alt = product.name;
+
+  // ایجاد گالری تصاویر کوچک
+  thumbnailGallery.innerHTML = '';
+  productImages.forEach((img, index) => {
+    const thumbnail = document.createElement('div');
+    thumbnail.className = `thumbnail rounded-md overflow-hidden bg-gray-50 h-20 cursor-pointer ${index === 0 ? 'active border-2 border-indigo-500' : ''}`;
+    thumbnail.innerHTML = `<img src="${img}" alt="${product.name}" class="w-full h-full object-contain">`;
+    thumbnail.addEventListener('click', () => {
+      // به‌روزرسانی تصویر اصلی
+      mainImage.src = img;
+
+      // به‌روزرسانی وضعیت فعال تصویر کوچک
+      document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active', 'border-2', 'border-indigo-500'));
+      thumbnail.classList.add('active', 'border-2', 'border-indigo-500');
+    });
+    thumbnailGallery.appendChild(thumbnail);
+  });
+}
+
+function renderProductPrice(product) {
+  const finalPriceElement = document.getElementById('final-price');
+  const originalPriceElement = document.getElementById('original-price');
+  const discountPercentageElement = document.getElementById('discount-percentage');
+  const discountBadge = document.getElementById('discount-badge');
+
+  if (product.price_after_discount && product.price_after_discount < product.price) {
+    // نمایش حالت تخفیف دار
+    originalPriceElement.textContent = `${product.price.toLocaleString('fa-IR')} تومان`;
+    originalPriceElement.classList.remove('hidden');
+
+    finalPriceElement.textContent = `${product.price_after_discount.toLocaleString('fa-IR')} تومان`;
+    finalPriceElement.classList.add('text-green-600', 'pulse');
+
+    const discountPercent = Math.round((1 - product.price_after_discount / product.price) * 100);
+    discountPercentageElement.textContent = `${discountPercent}% تخفیف`;
+    discountPercentageElement.classList.remove('hidden');
+
+    discountBadge.textContent = `${discountPercent}%`;
+    discountBadge.classList.remove('hidden');
+    discountBadge.classList.add('floating-badge');
+  } else {
+    // نمایش حالت بدون تخفیف
+    finalPriceElement.textContent = `${product.price.toLocaleString('fa-IR')} تومان`;
+    finalPriceElement.classList.remove('text-green-600', 'pulse');
+
+    originalPriceElement.classList.add('hidden');
+    discountPercentageElement.classList.add('hidden');
+    discountBadge.classList.add('hidden');
+  }
+}
+
+function renderStockStatus(product) {
+  const stockBadge = document.getElementById('stock-badge');
+  const addToCartBtn = document.getElementById('add-to-cart');
+  const quantityControls = document.querySelector('[for="quantity"]').parentElement;
+
+  if (product.stock > 0) {
+    stockBadge.textContent = 'موجود در انبار';
+    stockBadge.classList.remove('bg-gray-500');
+    stockBadge.classList.add('bg-green-600');
+    addToCartBtn.disabled = false;
+    quantityControls.classList.remove('hidden');
+  } else {
+    stockBadge.textContent = 'ناموجود';
+    stockBadge.classList.remove('bg-green-600');
+    stockBadge.classList.add('bg-gray-500');
+    addToCartBtn.disabled = true;
+    addToCartBtn.textContent = 'ناموجود';
+    addToCartBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+    addToCartBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+    quantityControls.classList.add('hidden');
+  }
+}
+
+function renderProductRating(product) {
+  const ratingContainer = document.getElementById('product-rating');
+  const reviewCountElement = document.getElementById('review-count');
+  const reviewsTabCountElement = document.getElementById('reviews-tab-count');
+
+  // نمایش امتیاز محصول
+  const rating = product.average_rating || 0;
+  const reviewCount = product.review_count || 0;
+
+  ratingContainer.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const star = document.createElement('span');
+    star.className = `text-${i <= Math.round(rating) ? 'yellow' : 'gray'}-400`;
+    star.innerHTML = i <= rating ? '★' : (i - 0.5 <= rating ? '½' : '☆');
+    ratingContainer.appendChild(star);
+  }
+
+  // نمایش تعداد نظرات
+  reviewCountElement.textContent = reviewCount;
+  reviewsTabCountElement.textContent = reviewCount;
+}
+
+function renderProductSpecs(product) {
+  const specsTable = document.getElementById('specs-table');
+  specsTable.innerHTML = '';
+
+  if (product.specifications && Object.keys(product.specifications).length > 0) {
+    Object.entries(product.specifications).forEach(([key, value], index) => {
+      const row = document.createElement('tr');
+      row.className = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+      row.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${key}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${value}</td>
+      `;
+      specsTable.appendChild(row);
+    });
+  } else {
+    specsTable.innerHTML = `
+      <tr>
+        <td colspan="2" class="px-6 py-4 text-center text-sm text-gray-500">مشخصات فنی برای این محصول ثبت نشده است</td>
+      </tr>
+    `;
+  }
+}
+
+function setupAddToCart(productId) {
+  document.getElementById('add-to-cart').addEventListener('click', async () => {
+    const quantity = parseInt(document.getElementById('quantity').value) || 1;
+
+    try {
+      const response = await fetch('/api/cart/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ product: productId, quantity })
+      });
+
+      if (response.ok) {
+        // نمایش نوتیفیکیشن
+        showNotification('محصول با موفقیت به سبد خرید اضافه شد');
+
+        // به‌روزرسانی تعداد سبد خرید
+        loadCartCount();
+
+        // انیمیشن دکمه
+        animateAddToCartButton();
+      } else {
+        throw new Error('خطا در افزودن به سبد خرید');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      showNotification('خطا در افزودن محصول به سبد خرید', 'error');
+    }
+  });
+}
+
+function animateAddToCartButton() {
+  const button = document.getElementById('add-to-cart');
+  button.classList.add('animate-pulse');
+  setTimeout(() => {
+    button.classList.remove('animate-pulse');
+  }, 1000);
+}
+
+function showNotification(message, type = 'success') {
+  // در اینجا می‌توانید از یک کتابخانه نوتیفیکیشن استفاده کنید یا یک پیام ساده نمایش دهید
+  alert(message); // این یک پیاده‌سازی ساده است، در عمل بهتر است از یک سیستم نوتیفیکیشن زیباتر استفاده کنید
+}
+
+async function loadCartCount() {
+  try {
+    const response = await fetch('/api/cart/count/', { credentials: 'same-origin' });
+    if (response.ok) {
+      const data = await response.json();
+      // اگر نیاز به نمایش تعداد سبد خرید در جایی دارید، می‌توانید اینجا آن را به‌روزرسانی کنید
+    }
+  } catch (error) {
+    console.error('Error loading cart count:', error);
+  }
+}
+
+function renderRelatedProducts(products) {
+  const container = document.getElementById('related-products');
+  container.innerHTML = '';
+
+  products.slice(0, 4).forEach(product => {
+    const productCard = document.createElement('div');
+    productCard.className = 'product-card group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300';
+    productCard.innerHTML = `
+      <div class="aspect-w-1 aspect-h-1 bg-gray-50 overflow-hidden">
+        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-contain p-4">
+        ${product.price_after_discount && product.price_after_discount < product.price ?
+          `<span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">${Math.round((1 - product.price_after_discount / product.price) * 100)}%</span>` : ''}
+      </div>
+      <div class="p-4">
+        <h3 class="text-sm font-medium text-gray-900 mb-1">
+          <a href="/product/${product.id}/">
+            <span aria-hidden="true" class="absolute inset-0"></span>
+            ${product.name}
+          </a>
+        </h3>
+        <div class="flex items-center mb-2">
+          ${Array(5).fill().map((_, i) =>
+            `<span class="text-${i < Math.round(product.average_rating || 0) ? 'yellow' : 'gray'}-400">${i < (product.average_rating || 0) ? '★' : '☆'}</span>`
+          ).join('')}
+          <span class="text-xs text-gray-500 mr-1">(${product.review_count || 0})</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            ${product.price_after_discount && product.price_after_discount < product.price ?
+              `<div>
+                <span class="text-sm text-gray-500 line-through">${product.price.toLocaleString('fa-IR')}</span>
+                <span class="text-base font-medium text-gray-900 mr-1">${product.price_after_discount.toLocaleString('fa-IR')}</span>
+                <span class="text-xs">تومان</span>
+              </div>` :
+              `<div>
+                <span class="text-base font-medium text-gray-900 mr-1">${product.price.toLocaleString('fa-IR')}</span>
+                <span class="text-xs">تومان</span>
+              </div>`
+            }
+          </div>
+          <button class="add-to-cart-quick text-indigo-600 hover:text-indigo-800 p-1 rounded-full" data-product-id="${product.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+    container.appendChild(productCard);
+  });
+
+  // اضافه کردن event listener برای دکمه‌های افزودن سریع به سبد خرید
+  document.querySelectorAll('.add-to-cart-quick').forEach(button => {
+    button.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const productId = button.dataset.productId;
+      try {
+        const response = await fetch('/api/cart/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ product: productId, quantity: 1 })
+        });
+
+        if (response.ok) {
+          showNotification('محصول با موفقیت به سبد خرید اضافه شد');
+          loadCartCount();
+
+          // انیمیشن دکمه
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+          setTimeout(() => {
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>';
+          }, 2000);
+        } else {
+          throw new Error('خطا در افزودن به سبد خرید');
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification('خطا در افزودن محصول به سبد خرید', 'error');
+      }
+    });
+  });
+}
+
+async function loadReviews(productId) {
+  try {
+    const response = await fetch(`/products/${productId}/reviews/`, { credentials: 'same-origin' });
+    const reviewsList = document.getElementById('reviews-list');
+
+    if (!response.ok) {
+      reviewsList.innerHTML = '<p class="text-gray-500 text-center py-8">خطا در بارگذاری نظرات</p>';
+      return;
+    }
+
+    const reviews = await response.json();
+
+    if (reviews.length === 0) {
+      reviewsList.innerHTML = '<p class="text-gray-500 text-center py-8">هنوز نظری برای این محصول ثبت نشده است</p>';
+      return;
+    }
+
+    reviewsList.innerHTML = '';
+    reviews.forEach(review => {
+      const reviewElement = document.createElement('div');
+      reviewElement.className = 'border-b border-gray-200 pb-8 last:border-0 last:pb-0';
+      reviewElement.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <div class="flex items-center mr-4">
+              ${Array(5).fill().map((_, i) =>
+                `<span class="text-${i < review.rating ? 'yellow' : 'gray'}-400">${i < review.rating ? '★' : '☆'}</span>`
+              ).join('')}
+            </div>
+            <h4 class="text-lg font-medium text-gray-900">${review.user_fullname || review.user || 'کاربر'}</h4>
+          </div>
+          <span class="text-sm text-gray-500">${new Date(review.created_at).toLocaleDateString('fa-IR')}</span>
+        </div>
+        <div class="prose prose-sm text-gray-600 max-w-none">
+          <p>${review.review}</p>
+        </div>
+      `;
+      reviewsList.appendChild(reviewElement);
+    });
+  } catch (error) {
+    console.error('Error loading reviews:', error);
+    document.getElementById('reviews-list').innerHTML = '<p class="text-gray-500 text-center py-8">خطا در بارگذاری نظرات</p>';
+  }
+}
+
+async function checkUserStatus() {
+  try {
+    const response = await fetch('/accounts/me/', { credentials: 'same-origin' });
+
+    if (response.ok) {
+      document.getElementById('review-form').classList.remove('hidden');
+      document.getElementById('login-prompt').classList.add('hidden');
+
+      // راه‌اندازی فرم نظر
+      document.getElementById('submit-review').addEventListener('click', submitReview);
+    } else {
+      document.getElementById('review-form').classList.add('hidden');
+      document.getElementById('login-prompt').classList.remove('hidden');
+    }
+  } catch (error) {
+    console.error('Error checking user status:', error);
+  }
+}
+
+async function submitReview() {
+  const reviewText = document.getElementById('review-text').value.trim();
+  const errorElement = document.getElementById('review-error');
+
+  if (!reviewText) {
+    errorElement.textContent = 'لطفاً متن نظر خود را وارد کنید';
+    return;
+  }
+
+  if (selectedRating === 0) {
+    errorElement.textContent = 'لطفاً به محصول امتیاز دهید';
+    return;
+  }
+
+  errorElement.textContent = '';
+
+  try {
+    const response = await fetch(`/products/${currentProductId}/reviews/`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        rating: selectedRating,
+        review: reviewText
+      })
+    });
+
+    if (response.ok) {
+      showNotification('نظر شما با موفقیت ثبت شد');
+      document.getElementById('review-text').value = '';
+      selectedRating = 0;
+      updateRatingStars();
+
+      // بارگذاری مجدد نظرات
+      loadReviews(currentProductId);
+
+      // به‌روزرسانی امتیاز محصول
+      loadProductDetails(currentProductId);
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'خطا در ثبت نظر');
+    }
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    errorElement.textContent = error.message || 'خطا در ثبت نظر. لطفاً دوباره تلاش کنید.';
+  }
+}
+
+function redirectToLogin() {
+  window.location.href = `/accounts/login/?next=${encodeURIComponent(window.location.pathname)}`;
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+</script>
+{% endblock %}

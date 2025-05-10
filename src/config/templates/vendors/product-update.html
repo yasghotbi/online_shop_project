@@ -1,0 +1,608 @@
+{% extends 'vendors/base.html' %}
+
+{% block title %}ویرایش محصول - {{ product.name }}{% endblock title %}
+
+{% block extra_css %}
+    <style>
+        /* Base form element styling */
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            @apply w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out bg-white text-gray-800; /* Added bg-white and text-gray-800 */
+        }
+
+        /* Specific styling for textarea */
+        textarea {
+             @apply min-h-[150px] resize-y; /* Increased min-height slightly */
+        }
+
+        /* Special styling for is_deleted checkbox */
+        input[name="is_deleted"] {
+            @apply w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer transition duration-150 ease-in-out;
+        }
+
+         /* Style the label next to the checkbox when checked */
+        input[name="is_deleted"]:checked + label {
+             @apply text-red-700 font-semibold; /* Make label bold/darker when checked */
+        }
+
+
+        /* JSON Field Styling */
+        #id_variant {
+            /* Style to look like a distinct code/data input area */
+            @apply font-mono text-sm p-4 bg-gray-100 rounded-md border border-gray-300 block w-full shadow-inner focus:border-blue-500 focus:ring-blue-500 transition duration-200 ease-in-out; /* Enhanced focus state and padding */
+            min-height: 200px; /* Increased min-height */
+            white-space: pre-wrap; /* Allows wrapping */
+            overflow-x: auto; /* Adds horizontal scroll if needed */
+            tab-size: 2; /* Adjust tab size for readability */
+        }
+
+        /* Price/Discount input padding for currency symbol */
+        input[name="price"], input[name="discount"] {
+            @apply pr-12 rtl:pl-12 rtl:pr-4; /* Increased padding slightly for 'Toman', added RTL adjustments */
+        }
+
+         /* Hide default file input visual */
+        input[type="file"] {
+            @apply sr-only;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+         /* Apply animation to main form sections */
+        .animate-fade-in-section {
+            animation: fadeIn 0.6s ease-out forwards; /* Slightly slower animation for sections */
+            opacity: 0; /* Ensure hidden before animation starts */
+        }
+        .animate-fade-in-section:nth-child(1) { animation-delay: 0.1s; } /* Add staggered delay */
+        .animate-fade-in-section:nth-child(2) { animation-delay: 0.2s; }
+        .animate-fade-in-section:nth-child(3) { animation-delay: 0.3s; } /* For the third panel */
+
+
+         /* RTL adjustments for icons/spacing */
+        .rtl\:ml-0 { margin-left: 0 !important; }
+        .rtl\:mr-1 { margin-right: 0.25rem !important; }
+        .rtl\:mr-2 { margin-right: 0.5rem !important; }
+
+        /* Ensure icons have consistent spacing regardless of RTL */
+        .flex-icon-text > svg {
+            @apply ml-2 rtl:ml-0 rtl:mr-2;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    {# The main content area from base.html provides bg-white, rounded-tl-lg, shadow-inner #}
+
+    <div class="pb-8 mb-8 border-b border-gray-200"> {# Increased padding-bottom #}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-4"> {# Increased gap #}
+            <div class="flex-1"> {# Allow title area to take up space #}
+                <h1 class="text-3xl font-bold text-gray-900">ویرایش محصول: <span
+                        class="text-indigo-700">{{ product.name }}</span></h1> {# Slightly darker indigo #}
+                <p class="mt-2 text-base text-gray-600">به‌روزرسانی اطلاعات و جزئیات محصول</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap justify-end"> {# Right align badges on small screens #}
+                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 ring-1 ring-inset ring-blue-700/10"> {# Added ring #}
+                    <svg class="w-4 h-4 flex-shrink-0 ml-1 rtl:ml-0 rtl:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 100 4m-1.414-1.414l-2.828 2.828m0-.004l-.01 0m0 0h.01m0 0l-.01 0m3.9-4.286a9.965 9.965 0 011.945 2.786zm-5.6 0L6.182 8.182m0 0L5 9m0 0a2 2 0 100 4m-1.414-1.414L.757 9.172m0 0a2 2 0 100 4m8.086-.01L6.757 15.556m0 0l-.01 0m-1.414-1.414L.757 12.172m0 0a2 2 0 100 4m8.086-.01l2.828-2.828m-6.727 6.727L6.757 15.556m0 0l-.01 0m-1.414 1.414l-2.828 2.828M13 16a2 2 0 100-4m-1.414 1.414l-2.828-2.828m6.727 6.727l-2.828-2.828M13 16a2 2 0 100 4m-1.414-1.414l-2.828 2.828m-6.727-6.727L6.757 18.444m0 0l-.01 0m-1.414 1.414l-2.828 2.828M17 9a2 2 0 100-4m-1.414 1.414l-2.828-2.828m-6.727 6.727l2.828-2.828M17 9a2 2 0 100 4m-1.414-1.414l-2.828 2.828m-6.727-6.727l2.828-2.828M13 9a2 2 0 100-4m-1.414 1.414l-2.828-2.828m-6.727 6.727l2.828-2.828M13 9a2 2 0 100 4m-1.414-1.414l-2.828 2.828"></path></svg>
+                        <span class="truncate max-w-xs">کد محصول: {{ product.id }}</span>
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ring-1 ring-inset {% if product.is_active %}bg-green-100 text-green-800 ring-green-700/10{% else %}bg-red-100 text-red-800 ring-red-700/10{% endif %}"> {# Added ring #}
+                         <svg class="w-4 h-4 flex-shrink-0 ml-1 rtl:ml-0 rtl:mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                             {% if product.is_active %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            {% else %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            {% endif %}
+                        </svg>
+                        {% if product.is_active %}فعال{% else %}غیرفعال{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{% url 'product-list-vendor' %}"
+                   class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-indigo-700 transition-colors duration-200 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0 ml-1 text-gray-500 group-hover:text-indigo-600 transition-colors duration-200 rtl:ml-0 rtl:mr-1"
+                         viewBox="0 0 20 20" fill="currentColor"> {# Smaller icon #}
+                        <path fill-rule="evenodd"
+                              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                    بازگشت به لیست محصولات
+                </a>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-8 mt-8"> {# Added mt-8 for spacing #}
+            {% csrf_token %}
+
+            <div class="bg-red-50 border border-red-200 p-6 rounded-lg shadow-sm animate-fade-in-section">
+                 <div class="flex items-start">
+                     <div class="flex-shrink-0">
+                          <svg class="h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                     </div>
+                     <div class="mr-4 rtl:ml-4 rtl:mr-0 w-0 flex-1"> {# Added RTL adjustment #}
+                         <h3 class="text-lg font-semibold text-red-800 mb-4">وضعیت محصول</h3> {# Slightly more emphasis on heading #}
+                         {% for field in form %}
+                            {% if field.name == 'is_deleted' %}
+                                 <div class="mt-3 flex items-center">
+                                     <div class="flex items-center h-5">
+                                         {{ field }}
+                                     </div>
+                                     <div class="mr-3 rtl:ml-3 rtl:mr-0 text-sm"> {# Added RTL adjustment #}
+                                         <label for="{{ field.id_for_label }}"
+                                                class="font-medium cursor-pointer transition-colors duration-200 text-gray-700 hover:text-gray-900"> {# Adjusted initial color and added hover #}
+                                                {{ field.label }}
+                                            </label>
+                                         {% if field.help_text %}
+                                             <p class="text-xs text-gray-500 mt-0.5">{{ field.help_text }}</p>
+                                         {% endif %}
+                                     </div>
+                                 </div>
+                                 {% for error in field.errors %}
+                                     <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                                 {% endfor %}
+                            {% endif %}
+                         {% endfor %}
+                     </div>
+                 </div>
+             </div>
+
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
+
+                <div class="space-y-8">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200 animate-fade-in-section">
+                        <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center text-blue-600 flex-icon-text"> {# Added flex-icon-text class #}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            اطلاعات پایه محصول
+                        </h3>
+                        <div class="space-y-4">
+                            {% for field in form %}
+                                {% if field.name in 'name,description,category' %}
+                                    <div>
+                                        <label for="{{ field.id_for_label }}"
+                                               class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                            <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+                                        {% endif %}
+                                        {% for error in field.errors %}
+                                            <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200 animate-fade-in-section">
+                         <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center text-purple-600 flex-icon-text"> {# Added flex-icon-text class #}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                            </svg>
+                            تنوع محصول (JSON)
+                        </h3>
+                        <div>
+                            <label for="{{ form.variant.id_for_label }}"
+                                   class="block text-sm font-medium text-gray-700 mb-1">{{ form.variant.label }}</label>
+                            <div class="relative">
+                                {{ form.variant }}
+                                <button type="button" onclick="formatJson()"
+                                        class="absolute bottom-2 left-2 px-3 py-1 bg-white hover:bg-gray-100 text-gray-700 text-xs font-medium rounded-md transition-colors duration-200 border border-gray-300 shadow-sm">
+                                    فرمت JSON
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">این فیلد باید به صورت JSON معتبر باشد (مثال: `{"رنگ": "قرمز", "اندازه": "بزرگ"}`)
+                            {% for error in form.variant.errors %}
+                                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                     <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200 animate-fade-in-section">
+                        <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center text-green-600 flex-icon-text"> {# Added flex-icon-text class #}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            قیمت‌گذاری و موجودی
+                        </h3>
+
+                        <div class="space-y-4">
+                            {% for field in form %}
+                                {% if field.name in 'price,discount,stock' %}
+                                    <div>
+                                        <label for="{{ field.id_for_label }}"
+                                               class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            {{ field }}
+                                            {% if field.name in 'price,discount' %}
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 rtl:left-0 rtl:right-auto rtl:pl-3"> {# Added RTL adjustment #}
+                                                    <span class="text-gray-500 sm:text-sm">تومان</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        {% if field.help_text %}
+                                            <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+                                        {% endif %}
+                                        {% for error in field.errors %}
+                                            <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% for field in form %}
+                                {% if field.name in 'is_active' and field.name != 'is_deleted'%}
+                                    <div>
+                                         <div class="mt-3 flex items-center">
+                                             <div class="flex items-center h-5">
+                                                 {{ field }}
+                                             </div>
+                                             <div class="mr-3 rtl:ml-3 rtl:mr-0 text-sm"> {# Added RTL adjustment #}
+                                                 <label for="{{ field.id_for_label }}"
+                                                        class="font-medium cursor-pointer transition-colors duration-200 text-gray-700 hover:text-gray-900">{{ field.label }}</label>
+                                                 {% if field.help_text %}
+                                                     <p class="text-xs text-gray-500 mt-0.5">{{ field.help_text }}</p>
+                                                 {% endif %}
+                                             </div>
+                                         </div>
+                                         {% for error in field.errors %}
+                                             <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                                         {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                     <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200 animate-fade-in-section">
+                        <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center text-indigo-600 flex-icon-text"> {# Added flex-icon-text class #}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            تصاویر محصول
+                        </h3>
+
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">تصویر فعلی</label>
+                                <div id="current-image-preview" class="bg-white rounded-lg overflow-hidden border border-gray-300 p-4 flex justify-center items-center min-h-[180px] shadow-inner"> {# Increased min-height, added shadow-inner #}
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}"
+                                             class="max-h-48 object-contain max-w-full rounded-md shadow">
+                                    {% else %}
+                                        <div class="flex flex-col items-center justify-center text-gray-400 py-4">
+                                            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      stroke-width="2"
+                                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span class="text-sm">تصویری موجود نیست</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div>
+                                {% for field in form %}
+                                    {% if field.name == 'image' %}
+                                        <div>
+                                            <label for="{{ field.id_for_label }}"
+                                                   class="block text-sm font-medium text-gray-700 mb-2">آپلود تصویر جدید</label>
+                                            <div id="new-image-upload-area"
+                                                 class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-indigo-600 transition-colors duration-200 bg-white"> {# Darker hover border #}
+                                                <div class="space-y-1 text-center">
+                                                    <svg class="mx-auto h-12 w-12 text-gray-400"
+                                                         stroke="currentColor" fill="none" viewBox="0 0 48 48"
+                                                         aria-hidden="true">
+                                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                              stroke-width="2" stroke-linecap="round"
+                                                              stroke-linejoin="round"></path>
+                                                    </svg>
+                                                    <div class="flex text-sm text-gray-600 justify-center">
+                                                        <label for="{{ field.id_for_label }}"
+                                                               class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                                            <span>انتخاب فایل</span>
+                                                            {{ field }}
+                                                        </label>
+                                                        <p class="mr-1 rtl:ml-1 rtl:mr-0">یا کشیدن و رها کردن</p> {# Added RTL adjustment #}
+                                                    </div>
+                                                    <p class="text-xs text-gray-500">PNG, JPG, GIF تا 10MB</p>
+                                                </div>
+                                            </div>
+                                            {% if field.help_text %}
+                                                <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+                                            {% endif %}
+                                            {% for error in field.errors %}
+                                                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 space-x-reverse pt-8 border-t border-gray-200">
+                 <a href="{% url 'product-detail' product.id %}"
+                   class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 shadow-sm font-medium"> {# Rounded-md, added font-medium #}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 ml-2 rtl:ml-0 rtl:mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                    انصراف
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-md shadow-md hover:shadow-lg transition duration-200 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"> {# Rounded-md, improved transform #}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 ml-2 rtl:ml-0 rtl:mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                    ذخیره تغییرات
+                </button>
+            </div>
+        </form>
+
+        {# Add a simple script for JSON formatting (optional but helpful) #}
+        <script>
+            function formatJson() {
+                const textarea = document.getElementById('id_variant');
+                try {
+                    const jsonValue = JSON.parse(textarea.value);
+                    textarea.value = JSON.stringify(jsonValue, null, 2); // Format with 2 space indentation
+                } catch (e) {
+                    alert('JSON نامعتبر است: ' + e.message);
+                }
+            }
+
+             // Optional: Add live image preview
+             document.addEventListener('DOMContentLoaded', function() {
+                const imageInput = document.getElementById('id_image');
+                const imagePreviewArea = document.getElementById('current-image-preview');
+
+                if (imageInput && imagePreviewArea) {
+                    imageInput.addEventListener('change', function(event) {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                imagePreviewArea.innerHTML = `<img src="${e.target.result}" alt="New Product Image" class="max-h-48 object-contain max-w-full rounded-md shadow">`;
+                            }
+                            reader.readAsDataURL(file);
+                        } else {
+                            // If user clears selection, show the 'No image' message or previous image
+                             {% if product.image %}
+                                imagePreviewArea.innerHTML = `<img src="{{ product.image.url }}" alt="{{ product.name }}" class="max-h-48 object-contain max-w-full rounded-md shadow">`;
+                             {% else %}
+                                imagePreviewArea.innerHTML = `
+                                    <div class="flex flex-col items-center justify-center text-gray-400 py-4">
+                                        <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span class="text-sm">تصویری موجود نیست</span>
+                                    </div>`;
+                            {% endif %}
+                        }
+                    });
+                }
+             });
+        </script>
+
+    {% endblock %}
+
+    {% block extra_js %}
+    <script>
+        // Keep the base.html JS block content here
+
+        // Add your product edit page specific JS below
+        document.addEventListener('DOMContentLoaded', function () {
+             // Add animation class to main form panels (status, and the cards within the grid)
+            const animatablePanels = document.querySelectorAll('form > div.bg-red-50, form .grid > div > div'); // Target status div and the cards inside the grid
+            animatablePanels.forEach((panel, index) => {
+                panel.classList.add('animate-fade-in-section');
+                panel.style.animationDelay = `${index * 0.08}s`; // Slightly faster animation delay
+            });
+
+
+            // Image preview for new upload
+            const imageInput = document.getElementById('id_image');
+            const newImageUploadArea = document.getElementById('new-image-upload-area');
+            const currentImagePreview = document.getElementById('current-image-preview');
+
+
+            if (imageInput && newImageUploadArea) {
+                imageInput.addEventListener('change', function (e) {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (event) {
+                            const previewImg = document.createElement('img');
+                            previewImg.src = event.target.result;
+                            previewImg.className = 'max-h-48 object-contain max-w-full rounded-md shadow'; // Adjusted max-height
+
+                            // Clear previous content and append new image
+                            newImageUploadArea.innerHTML = '';
+                            newImageUploadArea.classList.remove('flex-col', 'items-center', 'justify-center', 'space-y-1', 'text-center', 'px-6', 'pt-5', 'pb-6'); // Remove default placeholder styling
+                            newImageUploadArea.classList.add('flex', 'justify-center', 'items-center', 'p-4', 'border-none'); // Add flex for centering image and remove border visual
+
+                             // Optionally hide or dim the current image preview
+                            if (currentImagePreview) {
+                                currentImagePreview.style.opacity = '0.5';
+                                currentImagePreview.style.transition = 'opacity 0.3s ease-in-out';
+                            }
+
+                            newImageUploadArea.appendChild(previewImg);
+
+                             // Remove the hover effect border on successful selection
+                            newImageUploadArea.classList.remove('hover:border-indigo-500');
+                            newImageUploadArea.classList.add('border-gray-300', 'border-solid'); // Add a solid border back
+                             newImageUploadArea.style.cursor = 'default'; // Change cursor
+                             newImageUploadArea.style.minHeight = '150px'; // Ensure consistent height
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    } else {
+                         // If no file is selected after opening dialog, revert upload area state
+                         // Recreate the original placeholder content
+                        newImageUploadArea.innerHTML = `
+                             <div class="space-y-1 text-center">
+                                 <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                     <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                 </svg>
+                                 <div class="flex text-sm text-gray-600 justify-center">
+                                     <label for="id_image" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                         <span>انتخاب فایل</span>
+                                         <input type="file" name="image" accept="image/*" id="id_image">
+                                     </label>
+                                     <p class="mr-1">یا کشیدن و رها کردن</p>
+                                 </div>
+                                 <p class="text-xs text-gray-500">PNG, JPG, GIF تا 10MB</p>
+                             </div>
+                        `;
+                         // Restore original classes
+                         newImageUploadArea.classList.add('flex-col', 'items-center', 'justify-center', 'space-y-1', 'text-center', 'px-6', 'pt-5', 'pb-6');
+                         newImageUploadArea.classList.remove('flex', 'justify-center', 'items-center', 'p-4', 'border-none', 'border-solid');
+                         newImageUploadArea.classList.add('border-dashed', 'hover:border-indigo-500');
+                         newImageUploadArea.style.cursor = 'pointer';
+                         newImageUploadArea.style.minHeight = 'auto';
+
+
+                          // Restore current image preview opacity
+                         if (currentImagePreview) {
+                             currentImagePreview.style.opacity = '1';
+                         }
+                         // Note: The event listener for the file input is attached to the ID 'id_image' which is consistent,
+                         // so it should still work even if the inner HTML is replaced.
+                    }
+                });
+
+                 // Add drag and drop feedback
+                 newImageUploadArea.addEventListener('dragover', (e) => {
+                     e.preventDefault();
+                     newImageUploadArea.classList.add('border-indigo-500', 'bg-indigo-50');
+                 });
+
+                 newImageUploadArea.addEventListener('dragleave', (e) => {
+                      e.preventDefault();
+                      if (!newImageUploadArea.contains(e.relatedTarget)) {
+                         newImageUploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+                      }
+                 });
+
+                 newImageUploadArea.addEventListener('drop', (e) => {
+                     e.preventDefault();
+                     newImageUploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+                     const files = e.dataTransfer.files;
+                     if (files.length > 0) {
+                         imageInput.files = files;
+                         const event = new Event('change', { bubbles: true });
+                         imageInput.dispatchEvent(event);
+                     }
+                 });
+
+                 // Make the whole upload area clickable
+                 newImageUploadArea.addEventListener('click', function(event) {
+                     // Prevent clicking the label inside from triggering twice
+                     if (event.target.tagName !== 'LABEL' && event.target.tagName !== 'INPUT') {
+                         imageInput.click();
+                     }
+                 });
+            }
+
+
+            // Change color of is_deleted label when checked
+            const isDeletedCheckbox = document.getElementById('id_is_deleted');
+            if (isDeletedCheckbox) {
+                isDeletedCheckbox.addEventListener('change', function () {
+                    const label = document.querySelector('label[for="' + this.id + '"]');
+                    if (label) {
+                        if (this.checked) {
+                            label.classList.add('text-red-700'); // Use slightly darker red for checked state
+                            label.classList.remove('text-gray-700');
+                        } else {
+                            label.classList.remove('text-red-700');
+                            label.classList.add('text-gray-700');
+                        }
+                    }
+                });
+                 // Initial check on page load
+                 const initialLabel = document.querySelector('label[for="' + isDeletedCheckbox.id + '"]');
+                  if (initialLabel) {
+                     if (isDeletedCheckbox.checked) {
+                          initialLabel.classList.add('text-red-700');
+                          initialLabel.classList.remove('text-gray-700');
+                     } else {
+                          initialLabel.classList.remove('text-red-700');
+                          initialLabel.classList.add('text-gray-700');
+                     }
+                  }
+            }
+
+            // Format JSON button functionality
+            window.formatJson = function () {
+                const jsonField = document.getElementById('id_variant');
+                if (!jsonField) return;
+
+                try {
+                    const parsed = JSON.parse(jsonField.value);
+                    jsonField.value = JSON.stringify(parsed, null, 2);
+                    jsonField.classList.remove('border-red-500'); // Remove error border on successful format
+                } catch (e) {
+                    alert('JSON نامعتبر است: ' + e.message);
+                    jsonField.classList.add('border-red-500');
+                    jsonField.focus();
+                }
+            };
+
+             // Remove JSON error border when typing starts
+            const jsonField = document.getElementById('id_variant');
+            if (jsonField) {
+                 jsonField.addEventListener('input', function() {
+                     this.classList.remove('border-red-500');
+                 });
+            }
+
+
+        });
+
+        // Handle empty JSON field submission and basic validation
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const variantField = document.getElementById('id_variant');
+             if (variantField) { // Check if variant field exists
+                 if (!variantField.value.trim()) {
+                     variantField.value = '{}'; // Default to empty object if empty
+                 }
+                 // Basic JSON validation on submit
+                 try {
+                     JSON.parse(variantField.value.trim()); // Attempt to parse the current value
+                 } catch (e) {
+                     e.preventDefault(); // Prevent form submission if invalid JSON
+                     alert('لطفاً JSON معتبری برای تنوع محصول وارد کنید.');
+                     variantField.classList.add('border-red-500');
+                     variantField.focus();
+                 }
+             }
+        });
+    </script>
+    {% endblock %}

@@ -1,0 +1,504 @@
+{% extends "vendors/base.html" %} {# Assumes your base template is named base_vendor_dashboard.html #}
+{% load static %}
+
+{% block title %}داشبورد خلاصه فروشگاه{% endblock title %}
+
+{% block extra_css %}
+<style>
+    /* Add any specific CSS for the dashboard here if needed */
+    /* For example, chart container styling */
+    .chart-container {
+        position: relative;
+        margin: auto;
+        height: 300px; /* Adjust as needed */
+        width: 100%;
+    }
+    @media (min-width: 640px) { /* Small screens and up */
+        .chart-container {
+            height: 350px;
+        }
+    }
+    @media (min-width: 1024px) { /* Large screens and up */
+        .chart-container {
+             height: 400px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">خلاصه عملکرد فروشگاه</h2>
+
+    <div id="loading" class="text-center text-gray-600 mb-6">در حال بارگذاری اطلاعات...</div>
+
+    <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <strong class="font-bold">خطا!</strong>
+        <span class="block sm:inline" id="error-text">مشکلی در بارگذاری اطلاعات داشبورد پیش آمد.</span>
+    </div>
+
+    <div id="dashboard-content" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">سفارشات در انتظار</p>
+                <p id="pending-orders" class="text-2xl font-semibold text-blue-600">-</p>
+            </div>
+            <div class="p-3 bg-blue-100 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M17 16h.01" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">تخفیف‌های فعال</p>
+                <p id="active-discount-count" class="text-2xl font-semibold text-green-600">-</p>
+            </div>
+             <div class="p-3 bg-green-100 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">درآمد این ماه از تخفیف‌ها</p>
+                <p id="income-from-discounts" class="text-2xl font-semibold text-yellow-600">-</p>
+            </div>
+             <div class="p-3 bg-yellow-100 rounded-full">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8v1m0 12v1m-3-9h6m-9 2h10M4 18v-1a3 3 0 013-3h10a3 3 0 013 3v1a1 1 0 01-1 1H5a1 1 0 01-1-1z" />
+                 </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">کاربران جدید این هفته</p>
+                <p id="new-users" class="text-2xl font-semibold text-purple-600">-</p>
+            </div>
+             <div class="p-3 bg-purple-100 rounded-full">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                 </svg>
+            </div>
+        </div>
+
+         <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">کل محصولات</p>
+                <p id="product-total" class="text-2xl font-semibold text-indigo-600">-</p>
+            </div>
+             <div class="p-3 bg-indigo-100 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
+        </div>
+
+         <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">موجود در انبار</p>
+                <p id="product-in-stock" class="text-2xl font-semibold text-teal-600">-</p>
+            </div>
+             <div class="p-3 bg-teal-100 rounded-full">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                 </svg>
+            </div>
+        </div>
+
+         <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">ناموجود</p>
+                <p id="product-out-of-stock" class="text-2xl font-semibold text-red-600">-</p>
+            </div>
+             <div class="p-3 bg-red-100 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">کارمندان آنلاین امروز</p>
+                <p id="online-employee-count" class="text-2xl font-semibold text-cyan-600">-</p> {# Will show count here, list is below #}
+            </div>
+             <div class="p-3 bg-cyan-100 rounded-full">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zm-4 4a2 2 0 11-4 0 2 2 0 014 0z" />
+                 </svg>
+            </div>
+        </div>
+    </div>
+
+     <div id="charts-section" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">درآمد ۱۲ ماه اخیر</h3>
+            <div class="chart-container">
+                <canvas id="monthlyIncomeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">کارمندان آنلاین امروز (<span id="online-employee-count-list">-</span> نفر)</h3>
+            <ul id="online-employees-list" class="space-y-2 text-gray-700">
+                <li><span class="text-gray-500">در حال بارگذاری...</span></li>
+            </ul>
+        </div>
+
+        <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-md"> {# Make this wider or full width on large screens #}
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">فروش ۱۲ هفته اخیر (تعداد آیتم فروخته شده)</h3>
+            <div class="chart-container">
+                <canvas id="weeklySalesChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{# Include Chart.js library #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+{# Optional: Chart.js adapter for date handling if needed, but native Date might be enough #}
+{# <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script> #}
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingElement = document.getElementById('loading');
+        const errorMessageElement = document.getElementById('error-message');
+        const errorTextElement = document.getElementById('error-text');
+        const dashboardContentElement = document.getElementById('dashboard-content');
+        const chartsSectionElement = document.getElementById('charts-section');
+
+
+        const pendingOrdersEl = document.getElementById('pending-orders');
+        const activeDiscountCountEl = document.getElementById('active-discount-count');
+        const incomeFromDiscountsEl = document.getElementById('income-from-discounts');
+        const newUsersEl = document.getElementById('new-users');
+        const productTotalEl = document.getElementById('product-total');
+        const productInStockEl = document.getElementById('product-in-stock');
+        const productOutOfStockEl = document.getElementById('product-out-of-stock');
+        const onlineEmployeeCountEl = document.getElementById('online-employee-count'); // For the card
+        const onlineEmployeeCountListEl = document.getElementById('online-employee-count-list'); // For the list title
+        const onlineEmployeesListEl = document.getElementById('online-employees-list');
+        const monthlyIncomeChartCanvas = document.getElementById('monthlyIncomeChart');
+        const weeklySalesChartCanvas = document.getElementById('weeklySalesChart');
+
+        // Function to format numbers as currency (Rials/Tomans)
+        function formatCurrency(amount) {
+            // Simple formatting, adjust based on your needs (e.g., Tomans vs Rials)
+            // Assumes Rials; add '/ 10' for Tomans if needed
+            if (amount == null) return '۰'; // Display zero or similar for null/undefined
+            return new Intl.NumberFormat('fa-IR').format(amount) + ' ریال';
+        }
+
+         // Function to format simple numbers
+        function formatNumber(number) {
+             if (number == null) return '۰';
+             return new Intl.NumberFormat('fa-IR').format(number);
+        }
+
+
+        async function fetchDashboardData() {
+            loadingElement.classList.remove('hidden');
+            errorMessageElement.classList.add('hidden');
+            dashboardContentElement.classList.add('hidden');
+            chartsSectionElement.classList.add('hidden');
+
+
+            try {
+                const response = await fetch('/api/vendors/dashboard-summary/'); // Use the correct URL
+                if (!response.ok) {
+                    // Handle HTTP errors (e.g., 404, 500)
+                    const errorData = await response.json().catch(() => ({})); // Try parsing error body
+                    console.error('API Error:', response.status, response.statusText, errorData);
+                    throw new Error(`API error: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+
+                // Populate Summary Cards
+                pendingOrdersEl.textContent = formatNumber(data.pending_orders);
+                activeDiscountCountEl.textContent = formatNumber(data.active_discount_count);
+                incomeFromDiscountsEl.textContent = formatCurrency(data.income_from_discounts);
+                newUsersEl.textContent = formatNumber(data.new_users);
+                onlineEmployeeCountEl.textContent = formatNumber(data.online_employees.length); // Count for the card
+                onlineEmployeeCountListEl.textContent = formatNumber(data.online_employees.length); // Count for the list title
+
+
+                // Populate Product Summary Cards
+                if (data.product_summary) {
+                    productTotalEl.textContent = formatNumber(data.product_summary.total);
+                    productInStockEl.textContent = formatNumber(data.product_summary.in_stock);
+                    productOutOfStockEl.textContent = formatNumber(data.product_summary.out_of_stock);
+                } else {
+                     productTotalEl.textContent = 'N/A';
+                     productInStockEl.textContent = 'N/A';
+                     productOutOfStockEl.textContent = 'N/A';
+                }
+
+                // Populate Online Employees List
+                onlineEmployeesListEl.innerHTML = ''; // Clear previous list items
+                 if (data.online_employees && data.online_employees.length > 0) {
+                    data.online_employees.forEach(employee => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'border-b border-gray-200 pb-2 last:border-b-0 last:pb-0';
+                        listItem.textContent = `${employee.first_name || ''} ${employee.last_name || ''}`;
+                        onlineEmployeesListEl.appendChild(listItem);
+                    });
+                 } else {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'text-gray-500';
+                    listItem.textContent = 'کارمند آنلاینی یافت نشد.';
+                     onlineEmployeesListEl.appendChild(listItem);
+                 }
+
+
+                // Render Monthly Income Chart
+                renderMonthlyIncomeChart(data.monthly_income);
+
+                // Render Weekly Sales Chart
+                renderWeeklySalesChart(data.weekly_sales);
+
+                // Hide loading, show content
+                loadingElement.classList.add('hidden');
+                dashboardContentElement.classList.remove('hidden');
+                chartsSectionElement.classList.remove('hidden');
+
+
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error);
+                loadingElement.classList.add('hidden');
+                errorTextElement.textContent = `مشکلی در بارگذاری اطلاعات داشبورد پیش آمد: ${error.message || error}. لطفاً دوباره تلاش کنید.`;
+                errorMessageElement.classList.remove('hidden');
+                // Optionally hide dashboard content on error
+                 dashboardContentElement.classList.add('hidden');
+                 chartsSectionElement.classList.add('hidden');
+            }
+        }
+
+         // Function to render Monthly Income Chart
+        let monthlyIncomeChart = null; // Keep a reference to the chart instance
+
+        function renderMonthlyIncomeChart(monthlyData) {
+            if (monthlyIncomeChart) {
+                monthlyIncomeChart.destroy(); // Destroy previous instance if it exists
+            }
+
+            const ctx = monthlyIncomeChartCanvas.getContext('2d');
+
+             // Sort data by month
+            monthlyData.sort((a, b) => new Date(a.month) - new Date(b.month));
+
+            const labels = monthlyData.map(item => {
+                // Format month string (e.g., "2023-10-01T...") to display month name/year
+                try {
+                     const date = new Date(item.month);
+                     // Use toLocaleDateString for localized month name (adjust locale 'fa-IR' as needed)
+                     // Options: 'long' for full month name, 'short' for abbreviated, 'numeric' for number
+                     return date.toLocaleDateString('fa-IR', { year: 'numeric', month: 'short' });
+                 } catch (e) {
+                     console.error("Error formatting date:", item.month, e);
+                     return item.month ? item.month.split('T')[0] : 'نامشخص'; // Fallback
+                 }
+            });
+            const data = monthlyData.map(item => item.total_income || 0);
+
+            monthlyIncomeChart = new Chart(ctx, {
+                type: 'line', // or 'bar'
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'مجموع درآمد (ریال)',
+                        data: data,
+                        borderColor: '#3b82f6', // blue-500
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // blue-500 with transparency
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                     responsive: true,
+                     maintainAspectRatio: false, // Needed if parent container sets height
+                     plugins: {
+                         legend: {
+                             display: true,
+                             position: 'top',
+                              labels: {
+                                  font: {
+                                      family: 'Vazirmatn, sans-serif' // Apply font to legend
+                                  }
+                              }
+                         },
+                         tooltip: {
+                              rtl: true, // Enable RTL for tooltips
+                             callbacks: {
+                                 label: function(context) {
+                                     let label = context.dataset.label || '';
+                                     if (label) {
+                                         label += ': ';
+                                     }
+                                      if (context.parsed.y !== null) {
+                                        label += formatCurrency(context.parsed.y);
+                                     }
+                                     return label;
+                                 }
+                             },
+                             bodyFont: {
+                                family: 'Vazirmatn, sans-serif'
+                             },
+                              titleFont: {
+                                family: 'Vazirmatn, sans-serif'
+                              }
+                         }
+                     },
+                    scales: {
+                        x: {
+                             // type: 'time', // Use 'time' scale if using a date adapter
+                             // time: {
+                             //     unit: 'month',
+                             //     tooltipFormat: 'yyyy-MM'
+                             // },
+                             title: {
+                                 display: true,
+                                 text: 'ماه',
+                                  font: { family: 'Vazirmatn, sans-serif' }
+                             },
+                             ticks: {
+                                  font: { family: 'Vazirmatn, sans-serif' }
+                             }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'درآمد (ریال)',
+                                 font: { family: 'Vazirmatn, sans-serif' }
+                            },
+                             beginAtZero: true, // Start y-axis at 0
+                             ticks: {
+                                 callback: function(value, index, values) {
+                                    // Format Y-axis labels (optional, can format large numbers)
+                                    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                                    return formatNumber(value); // Use formatNumber for ticks
+                                 },
+                                  font: { family: 'Vazirmatn, sans-serif' }
+                             }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to render Weekly Sales Chart
+         let weeklySalesChart = null; // Keep a reference to the chart instance
+
+        function renderWeeklySalesChart(weeklyData) {
+             if (weeklySalesChart) {
+                weeklySalesChart.destroy(); // Destroy previous instance if it exists
+            }
+
+            const ctx = weeklySalesChartCanvas.getContext('2d');
+
+             // Sort data by week
+             weeklyData.sort((a, b) => new Date(a.week) - new Date(b.week));
+
+
+            const labels = weeklyData.map(item => {
+                 // Format week string (e.g., "2023-W40") or date string
+                 try {
+                     const date = new Date(item.week);
+                     // Format to show the week start date or week number + year
+                     // Example: Week of Oct 01, 2023
+                      return date.toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' });
+                 } catch (e) {
+                      console.error("Error formatting date:", item.week, e);
+                      return item.week ? item.week.split('T')[0] : 'نامشخص'; // Fallback
+                 }
+            });
+            const data = weeklyData.map(item => item.total_sold || 0);
+
+            weeklySalesChart = new Chart(ctx, {
+                type: 'bar', // or 'line'
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'تعداد آیتم فروخته شده',
+                        data: data,
+                        backgroundColor: '#14b8a6', // teal-500
+                        borderColor: '#0d9488', // teal-600
+                        borderWidth: 1
+                    }]
+                },
+                 options: {
+                     responsive: true,
+                     maintainAspectRatio: false, // Needed if parent container sets height
+                     plugins: {
+                         legend: {
+                             display: true,
+                             position: 'top',
+                             labels: {
+                                  font: {
+                                      family: 'Vazirmatn, sans-serif' // Apply font to legend
+                                  }
+                             }
+                         },
+                         tooltip: {
+                              rtl: true, // Enable RTL for tooltips
+                             bodyFont: {
+                                family: 'Vazirmatn, sans-serif'
+                             },
+                              titleFont: {
+                                family: 'Vazirmatn, sans-serif'
+                              }
+                         }
+                     },
+                    scales: {
+                        x: {
+                             title: {
+                                 display: true,
+                                 text: 'هفته',
+                                 font: { family: 'Vazirmatn, sans-serif' }
+                             },
+                              ticks: {
+                                  font: { family: 'Vazirmatn, sans-serif' }
+                             }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'تعداد',
+                                 font: { family: 'Vazirmatn, sans-serif' }
+                            },
+                             beginAtZero: true, // Start y-axis at 0
+                             ticks: {
+                                  font: { family: 'Vazirmatn, sans-serif' }
+                             }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // Fetch data when the page loads
+        fetchDashboardData();
+    });
+
+    // Ensure Chart.js uses RTL layout if your page direction is RTL
+    Chart.defaults.plugins.tooltip.rtl = true;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true; // Optional: use circle point style in legend
+
+    // Configure default font for Chart.js globally if possible (might be overridden by individual configs)
+     Chart.defaults.font.family = 'Vazirmatn, sans-serif'; // Apply a suitable Persian font
+     Chart.defaults.font.size = 12;
+
+
+</script>
+{% endblock %}

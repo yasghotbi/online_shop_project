@@ -1,0 +1,97 @@
+{% extends "customers/customer-dashboard.html" %}
+{% load static %}
+
+{% block title %}پروفایل مشتری | فروشگاه حرفه‌ای{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <!-- Profile Header -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-6 border-b border-gray-200">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div class="flex items-center mb-4 sm:mb-0">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-user-circle text-blue-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">{{ customer.first_name }} {{ customer.last_name }}</h1>
+                        <p class="text-sm text-gray-500">مشتری از {{ customer.date_joined|date:"Y/m/d" }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'customer-profile-edit' customer.pk %}"
+                   class="flex items-center bg-white hover:bg-gray-50 text-blue-600 border border-blue-200 px-4 py-2 rounded-lg shadow-sm transition-all">
+                    <i class="fas fa-user-edit ml-2"></i>
+                    ویرایش پروفایل
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="p-6">
+            <div class="space-y-6">
+                <!-- Personal Info Section -->
+                <div class="space-y-4">
+                    <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 border-gray-100">
+                        <i class="fas fa-id-card ml-2 text-blue-500"></i>
+                        اطلاعات شخصی
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm font-medium text-gray-500 mb-1">نام کامل</p>
+                            <p class="text-gray-800">{{ customer.first_name }} {{ customer.last_name }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm font-medium text-gray-500 mb-1">ایمیل</p>
+                            <p class="text-gray-800">{{ customer.email }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm font-medium text-gray-500 mb-1">شماره تماس</p>
+                            <p class="text-gray-800">{{ customer.phone_number }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm font-medium text-gray-500 mb-1">تاریخ عضویت</p>
+                            <p class="text-gray-800">{{ customer.date_joined|date:"Y/m/d" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="space-y-4 pt-4">
+                    <h2 class="text-lg font-semibold text-gray-800 border-b pb-2 border-gray-100">
+                        <i class="fas fa-bolt ml-2 text-blue-500"></i>
+                        اقدامات سریع
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="{% url 'address-list' %}"
+                           class="flex items-center justify-between bg-white hover:bg-gray-50 border border-gray-200 p-4 rounded-lg transition-colors">
+                            <div class="flex items-center">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-map-marker-alt text-blue-600"></i>
+                                </div>
+                                <span>مدیریت آدرس‌ها</span>
+                            </div>
+                            <i class="fas fa-chevron-left text-gray-400"></i>
+                        </a>
+
+                        <a href="#"
+                           class="flex items-center justify-between bg-white hover:bg-gray-50 border border-gray-200 p-4 rounded-lg transition-colors">
+                            <div class="flex items-center">
+                                <div class="bg-green-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-shopping-bag text-green-600"></i>
+                                </div>
+                                <span>سفارشات من</span>
+                            </div>
+                            <i class="fas fa-chevron-left text-gray-400"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock dashboard_content %}

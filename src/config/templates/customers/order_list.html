@@ -1,0 +1,207 @@
+{% extends "customers/customer-dashboard.html" %}
+{% load static humanize %}
+
+{% block title %}سفارش‌های من | فروشگاه حرفه‌ای{% endblock title %}
+
+{% block dashboard_content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">سفارش‌های من</h1>
+            <p class="text-gray-500 mt-1">تاریخچه تمام سفارش‌های شما در یک نگاه</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <div class="relative w-56">
+                <select
+                    class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                    <option>همه سفارش‌ها</option>
+                    <option>در انتظار پرداخت</option>
+                    <option>در حال پردازش</option>
+                    <option>ارسال شده</option>
+                    <option>تحویل داده شده</option>
+                </select>
+                <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-2 text-gray-700">
+                    <i class="fas fa-filter"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if orders %}
+    <!-- جدول سفارشات -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            شماره سفارش
+                        </th>
+                        <th
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            تاریخ
+                        </th>
+                        <th
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            مبلغ کل
+                        </th>
+                        <th
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            وضعیت
+                        </th>
+                        <th
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            عملیات
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for order in orders %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">#{{ order.id }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">
+                                {{ order.created_at|date:"Y/m/d" }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-blue-600">
+                                {{ order.total_price|intcomma }}&nbsp;تومان
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                {% if order.status == 'تحویل داده شده' %}
+                                    bg-green-100 text-green-800
+                                {% elif order.status == 'ارسال شده' %}
+                                    bg-blue-100 text-blue-800
+                                {% elif order.status == 'در حال پردازش' %}
+                                    bg-yellow-100 text-yellow-800
+                                {% elif order.status == 'در انتظار پرداخت' %}
+                                    bg-orange-100 text-orange-800
+                                {% else %}
+                                    bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'order-detail' order.pk %}"
+                               class="text-blue-600 hover:text-blue-900 flex items-center">
+                                <i class="fas fa-eye ml-1"></i>
+                                مشاهده جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- صفحه‌بندی -->
+    <div class="flex items-center justify-between mt-8">
+        <!-- موبایل -->
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% if orders.has_previous %}
+            <a href="?page={{ orders.previous_page_number }}"
+               class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                قبلی
+            </a>
+            {% else %}
+            <span
+               class="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-100">
+                قبلی
+            </span>
+            {% endif %}
+            {% if orders.has_next %}
+            <a href="?page={{ orders.next_page_number }}"
+               class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                بعدی
+            </a>
+            {% else %}
+            <span
+               class="ml-3 inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-100">
+                بعدی
+            </span>
+            {% endif %}
+        </div>
+        <!-- دسکتاپ -->
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <p class="text-sm text-gray-700">
+                نمایش
+                <span class="font-medium">{{ orders.start_index }}</span>
+                تا
+                <span class="font-medium">{{ orders.end_index }}</span>
+                از
+                <span class="font-medium">{{ orders.paginator.count }}</span>
+                نتیجه
+            </p>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                {% if orders.has_previous %}
+                <a href="?page={{ orders.previous_page_number }}"
+                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">قبلی</span>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% else %}
+                <span
+                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-200 bg-gray-100 text-sm font-medium text-gray-400">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                {% endif %}
+
+                {% for num in orders.paginator.page_range %}
+                    {% if orders.number == num %}
+                    <span
+                      aria-current="page"
+                      class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        {{ num }}
+                    </span>
+                    {% else %}
+                    <a href="?page={{ num }}"
+                       class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        {{ num }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if orders.has_next %}
+                <a href="?page={{ orders.next_page_number }}"
+                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">بعدی</span>
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% else %}
+                <span
+                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-200 bg-gray-100 text-sm font-medium text-gray-400">
+                    <i class="fas fa-chevron-left"></i>
+                </span>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+    {% else %}
+    <!-- حالت خالی -->
+    <div class="text-center py-16">
+        <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-gray-100">
+            <i class="fas fa-shopping-bag text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">سفارشی یافت نشد</h3>
+        <p class="mt-1 text-sm text-gray-500">شما تاکنون هیچ سفارشی ثبت نکرده‌اید.</p>
+        <div class="mt-6">
+            <a href="{% url 'product-list' %}"
+               class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-shopping-cart ml-2"></i>
+                بازگشت به فروشگاه
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock dashboard_content %}

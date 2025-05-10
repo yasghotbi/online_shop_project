@@ -1,0 +1,182 @@
+{% extends 'vendors/base.html' %}
+
+{% block title %}لیست محصولات | {{ store.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">محصولات فروشگاه</h1>
+      <p class="text-gray-600 mt-1">مدیریت محصولات فروشگاه {{ store.name }}</p> {# Adjusted margin #}
+    </div>
+    {# Use direct Tailwind classes for the button #}
+    <a href="{% url 'product-create' %}" class="inline-flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+      افزودن محصول جدید
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+    {% if products %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200"> {# Use min-w-full and divide #}
+        <thead class="bg-gray-100">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">محصول</th> {# Adjusted styling #}
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">قیمت</th> {# Adjusted styling #}
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">موجودی</th> {# Adjusted styling #}
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">تخفیف</th> {# Added Discount column #}
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">عملیات</th> {# Adjusted styling #}
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200"> {# Use divide #}
+          {% for product in products %}
+          <tr class="hover:bg-gray-50 transition duration-150"> {# Added duration #}
+            <td class="px-6 py-4 whitespace-nowrap"> {# Consistent padding #}
+              <div class="flex items-center">
+                {# Product Image/Avatar #}
+                <div class="flex-shrink-0 h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden"> {# Rounded-md for product #}
+                  {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-full w-full object-cover">
+                  {% else %}
+                     <svg class="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10m-4-2h8m-4-4h.01" />
+                     </svg> {# More specific product icon #}
+                  {% endif %}
+                </div>
+                <div class="mr-4"> {# Consistent margin #}
+                  <a href="{% url 'product-detail' product.id %}" class="text-sm font-medium text-gray-900 hover:text-blue-600"> {# Adjusted text styles #}
+                    {{ product.name }}
+                  </a>
+                  <p class="text-sm text-gray-500">{{ product.category|default:"-" }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.price }} تومان</td> {# Adjusted text styles #}
+            <td class="px-6 py-4 whitespace-nowrap text-sm"> {# Adjusted text styles #}
+              <span class="font-medium {% if product.stock > 0 %}text-green-600{% else %}text-red-600{% endif %}"> {# Added font-medium #}
+                {% if product.stock > 0 %}{{ product.stock }} عدد{% else %}ناموجود{% endif %}
+              </span>
+            </td>
+            {# Removed the Status column #}
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> {# Added Discount data cell #}
+              {% if product.discount and product.discount.value > 0 %} {# Assuming 'discount' attribute exists and is a number #}
+                 <span class="text-green-600 font-medium">{{ product.discount.name }}%</span> {# Display as percentage, adjust as needed #}
+              {% else %}
+                 - {# Show dash if no discount #}
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              {# Action Buttons (Icon only with titles) #}
+              <div class="flex space-x-2 space-x-reverse"> {# Flex with reverse for RTL #}
+                {# View Button #}
+                <a href="{% url 'product-detail-vendor' product.id %}" class="text-blue-600 hover:text-blue-900" title="مشاهده جزئیات">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </a>
+                {# Edit Button #}
+                <a href="{% url 'product-update' product.id %}" class="text-yellow-600 hover:text-yellow-900" title="ویرایش">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </a>
+
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+    <div class="px-6 py-4 border-t border-gray-200 flex justify-center"> {# Consistent padding and border #}
+      <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px rtl:space-x-reverse" aria-label="Pagination"> {# Use standard pagination component styling #}
+
+         {# Previous Button #}
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+             <span class="sr-only">Previous</span> {# Screen reader text #}
+             <svg class="h-5 w-5 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06-.02z" clip-rule="evenodd" />
+              </svg>
+          </a>
+        {% else %}
+           <span class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+             <span class="sr-only">Previous</span>
+              <svg class="h-5 w-5 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06-.02z" clip-rule="evenodd" />
+              </svg>
+           </span>
+        {% endif %}
+
+        {# Page Numbers #}
+         {% for num in page_obj.paginator.page_range %}
+            {# Simple range with ellipsis placeholder #}
+            {% if num == page_obj.number %}
+                 <span aria-current="page" class="relative z-10 inline-flex items-center bg-indigo-600 border-indigo-600 text-white px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    {{ num }}
+                 </span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} {# Keep original range logic #}
+                 <a href="?page={{ num }}" class="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                    {{ num }}
+                 </a>
+            {# Add ellipsis if needed (basic check) #}
+             {% comment %} This basic ellipsis logic might need refinement for complex cases {% endcomment %}
+             {% elif num == page_obj.number|add:'-4' and page_obj.number|add:'-3' > 1 %}
+                 <span class="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">...</span>
+             {% elif num == page_obj.number|add:'3' and page_obj.number|add:'3' < page_obj.paginator.num_pages %}
+                 <span class="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">...</span>
+            {% endif %}
+         {% endfor %}
+
+
+        {# Next Button #}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+             <span class="sr-only">Next</span> {# Screen reader text #}
+             <svg class="h-5 w-5 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+              </svg>
+          </a>
+        {% else %}
+           <span class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+              <span class="sr-only">Next</span>
+              <svg class="h-5 w-5 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+              </svg>
+           </span>
+        {% endif %}
+
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="p-8 text-center bg-gray-50"> {# Added light background #}
+      <div class="mx-auto w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4"> {# Slightly darker background #}
+        <svg class="h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10m-4-2h8m-4-4h.01" />
+        </svg> {# Updated icon size #}
+      </div>
+      <h3 class="text-xl font-medium text-gray-800 mb-2">هنوز محصولی اضافه نکرده‌اید</h3> {# Adjusted text style #}
+      <p class="text-gray-600 mb-6">برای شروع فروش، اولین محصول خود را اضافه کنید</p> {# Adjusted margin #}
+      {# Use direct Tailwind classes for the button #}
+      <a href="{% url 'product-create' %}" class="inline-flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+        افزودن محصول
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# Removed the custom style block and used direct Tailwind classes #}
+{% endblock %}

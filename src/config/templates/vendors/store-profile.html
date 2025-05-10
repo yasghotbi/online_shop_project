@@ -1,0 +1,114 @@
+{% extends "vendors/base.html" %}
+
+{% block title %}پروفایل فروشگاه | {{ store.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">پروفایل فروشگاه</h1>
+      <p class="text-gray-600 mt-2">اطلاعات کامل فروشگاه شما</p>
+    </div>
+    {% if request.user == store.owner %}
+    <a href="{% url 'store-update' store.pk %}" class="btn-primary">
+      <i class="fas fa-edit ml-2"></i>
+      ویرایش پروفایل
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Profile Card -->
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="p-8">
+      <div class="flex flex-col md:flex-row gap-8">
+        <!-- Store Image -->
+        <div class="w-full md:w-1/3">
+          <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center">
+            {% if store.image %}
+            <img src="{{ store.image.url }}" alt="{{ store.name }}" class="h-full w-full object-contain">
+            {% else %}
+            <i class="fas fa-store text-4xl text-gray-400"></i>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Store Details -->
+        <div class="w-full md:w-2/3 space-y-6">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-800">{{ store.name }}</h2>
+            <p class="text-gray-500 mt-1">{{ store.short_description|default:"بدون توضیحات" }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <h3 class="text-sm font-medium text-gray-500">اطلاعات تماس</h3>
+              <div class="space-y-1">
+                <p class="flex items-center text-gray-700">
+                  <i class="fas fa-envelope ml-2 text-gray-400"></i>
+                  {{ store.owner.email|default:"ثبت نشده" }}
+                </p>
+                <p class="flex items-center text-gray-700">
+                  <i class="fas fa-phone ml-2 text-gray-400"></i>
+                  {{ store.owner.phone_number|default:"ثبت نشده" }}
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h3 class="text-sm font-medium text-gray-500">آدرس فروشگاه</h3>
+              <p class="text-gray-700">
+                <i class="fas fa-map-marker-alt ml-2 text-gray-400"></i>
+                {{ store.address|default:"ثبت نشده" }}
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <h3 class="text-sm font-medium text-gray-500">زمان کاری</h3>
+              <p class="text-gray-700">
+                <i class="fas fa-clock ml-2 text-gray-400"></i>
+                {{ store.working_hours|default:"ثبت نشده" }}
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <h3 class="text-sm font-medium text-gray-500">شبکه های اجتماعی</h3>
+              <div class="flex gap-4">
+                {% if store.instagram %}
+                <a href="{{ store.instagram }}" class="text-gray-500 hover:text-pink-600">
+                  <i class="fab fa-instagram text-xl"></i>
+                </a>
+                {% endif %}
+                {% if store.telegram %}
+                <a href="{{ store.telegram }}" class="text-gray-500 hover:text-blue-500">
+                  <i class="fab fa-telegram text-xl"></i>
+                </a>
+                {% endif %}
+                {% if store.whatsapp %}
+                <a href="{{ store.whatsapp }}" class="text-gray-500 hover:text-green-500">
+                  <i class="fab fa-whatsapp text-xl"></i>
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Info Section -->
+    <div class="border-t border-gray-200 px-8 py-6">
+      <h3 class="text-lg font-medium text-gray-800 mb-4">توضیحات تکمیلی</h3>
+      <p class="text-gray-700 leading-relaxed">
+        {{ store.description|default:"توضیحاتی توسط فروشگاه ثبت نشده است." }}
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center transition;
+  }
+</style>
+{% endblock %}

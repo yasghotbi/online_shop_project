@@ -1,0 +1,322 @@
+{% extends 'vendors/base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "جزئیات محصول" %} | {{ product.name|default:"--" }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-card {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .persian-digits {
+            /* Assuming Vazirmatn or a similar font is loaded in base.html */
+            /* font-family: 'Vazirmatn', sans-serif; */
+        }
+
+        /* Custom styles for the progress bar */
+        .progress-bar {
+            width: 100%;
+            background-color: #e5e7eb; /* gray-200 */
+            border-radius: 9999px; /* full rounded */
+            height: 0.5rem; /* h-2 */
+            overflow: hidden; /* ensures the fill stays rounded */
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px; /* full rounded */
+            /* Background color will be set dynamically or based on percentage */
+            transition: width 0.3s ease-in-out; /* smooth animation */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-4 border-b border-gray-200">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+                    {% trans "جزئیات محصول" %}
+                    <span class="text-blue-600">{{ product.name|default:"--" }}</span>
+                </h1>
+                <p class="mt-2 text-sm text-gray-600">{% trans "مدیریت جامع اطلاعات محصول" %}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                {% if product.id %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200 shadow-sm">
+                        <i class="fas fa-barcode ml-2"></i>
+                        {% trans "کد محصول:" %} {{ product.id }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="animate-card bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+                 style="animation-delay: 0.1s;">
+                <div class="bg-gradient-to-r from-blue-100 to-indigo-100 p-6 border-b border-blue-200">
+                    <h2 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-image text-blue-600 ml-2"></i>
+                        {% trans "تصویر محصول" %}
+                    </h2>
+                </div>
+                <div class="p-6 flex items-center justify-center min-h-96">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}"
+                             class="object-contain max-h-80 w-auto rounded-xl transition duration-300 hover:scale-105 shadow-md">
+                    {% else %}
+                        <div class="text-center text-gray-400 py-12">
+                            <i class="fas fa-image fa-3x mb-4"></i>
+                            <p class="text-sm">{% trans "تصویری موجود نیست" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="animate-card bg-white rounded-2xl shadow-xl border border-gray-100"
+                 style="animation-delay: 0.2s;">
+                <div class="bg-gradient-to-r from-blue-100 to-indigo-100 p-6 border-b border-blue-200">
+                    <h2 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-info-circle text-blue-600 ml-2"></i>
+                        {% trans "اطلاعات اصلی" %}
+                    </h2>
+                </div>
+                <div class="p-6 space-y-6 text-sm text-gray-800"> {# Set base text color and size #}
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                            <span class="font-medium text-gray-500">{% trans "نام محصول" %}</span>
+                            <span class="font-semibold">{{ product.name|default:"--" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                            <span class="font-medium text-gray-500">{% trans "دسته‌بندی" %}</span>
+                            <span class="font-semibold">{{ product.category.name|default:"--" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                            <span class="font-medium text-gray-500">{% trans "فروشگاه" %}</span>
+                            <span class="font-semibold">{{ product.store.name|default:"--" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center"> {# No bottom border on last item #}
+                            <span class="font-medium text-gray-500">{% trans "تخفیف" %}</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ product.discount|yesno:'green,gray' }}-100 text-{{ product.discount|yesno:'green,gray' }}-800">
+                                {{ product.discount.name|default:"بدون تخفیف" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">{% trans "قیمت پایه" %}</p>
+                                <p class="text-2xl font-bold text-green-600 persian-digits">
+                                    {{ product.price|default:"0" }} {% trans "تومان" %}
+                                </p>
+                            </div>
+                            {% if product.discount %}
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-600">{% trans "قیمت با تخفیف" %}</p>
+                                    <p class="text-xl font-bold text-red-600 persian-digits">
+                                        {{ product.get_discounted_price|default:"0" }} {% trans "تومان" %}
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="font-medium text-gray-500 mb-2">{% trans "میانگین امتیاز کاربران" %}</p>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center text-yellow-500"> {# Stars container #}
+                                {% with rating=average_rating|default:0|floatformat:0 %}
+                                    {# Ensure rating is an integer for loop #}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= rating %}
+                                            <i class="fas fa-star text-yellow-400"></i> {# Filled star #}
+                                        {% else %}
+                                            <i class="fas fa-star text-gray-300"></i> {# Empty star #}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <span class="text-sm text-gray-600 persian-digits font-semibold">
+                                ({{ average_rating|default:"0" }} از 5)
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            {% trans "بر اساس" %} {{ reviews.count }} {% trans "نظر کاربران" %}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="font-medium text-gray-500 mb-2">{% trans "توضیحات" %}</p>
+                        <p class="text-gray-700 leading-relaxed">
+                            {{ product.description|default:"--"|linebreaksbr }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <div class="animate-card bg-white rounded-2xl shadow-xl border border-gray-100"
+                 style="animation-delay: 0.3s;">
+                <div class="bg-gradient-to-r from-blue-100 to-indigo-100 p-6 border-b border-blue-200">
+                    <h2 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-boxes text-blue-600 ml-2"></i>
+                        {% trans "موجودی و فروش" %}
+                    </h2>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-500">{% trans "موجودی فعلی" %}</span>
+                            <span class="text-xl font-bold text-blue-600 persian-digits">
+                                {{ product.stock|default:"0" }} {% trans "عدد" %}
+                            </span>
+                        </div>
+                        {% comment %} Progress bar requires stock percentage calculation in view {% endcomment %}
+                        {% if stock_percentage is not None %} {# Assuming stock_percentage is passed if calculated #}
+                            <div class="progress-bar mt-2">
+                                <div class="progress-fill"
+                                     style="width: {{ stock_percentage }}%; background-color: {% if stock_percentage < 20 %}#ef4444{% elif stock_percentage < 50 %}#f59e0b{% else %}#22c55e{% endif %};">
+                                    {# Dynamic color based on percentage #}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-500">{% trans "فروش این ماه (تعداد)" %}</span>
+                            <span class="text-xl font-bold text-green-600 persian-digits">
+                                {{ monthly_sales_count|default:"0" }} {% trans "عدد" %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-500">{% trans "درآمد این ماه" %}</span>
+                            <span class="text-xl font-bold text-purple-600 persian-digits">
+                                {{ monthly_income|default:"0" }} {% trans "تومان" %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="animate-card bg-white rounded-2xl shadow-xl border border-gray-100"
+                 style="animation-delay: 0.4s;">
+                <div class="bg-gradient-to-r from-blue-100 to-indigo-100 p-6 border-b border-blue-200">
+                    <h2 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-comments text-blue-600 ml-2"></i>
+                        {% trans "نظرات کاربران" %} ({{ reviews.count }})
+                    </h2>
+                </div>
+                <div class="p-6 space-y-6">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="pb-4 mb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                                        <i class="fas fa-user-circle text-gray-400"></i>
+                                        <span class="font-semibold text-gray-900 text-sm">{{ reviews.user.username }}</span>
+                                        {% if review.user %}
+                                            {{ review.user.get_full_name|default:review.user.username }}
+                                        {% else %}
+                                            کاربر مهمان
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-xs text-gray-500 persian-digits">
+                                        {{ review.created_at|date:"Y/m/d" }}
+                                    </span>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center text-yellow-500 text-sm"> {# Stars container #}
+                                        {% with review_rating=review.rating|default:0 %}
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review_rating %}
+                                                    <i class="fas fa-star text-yellow-400"></i> {# Filled star #}
+                                                {% else %}
+                                                    <i class="fas fa-star text-gray-300"></i> {# Empty star #}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </div>
+                                    <p class="text-sm text-gray-800 leading-relaxed">
+                                        {{ review.review|default:"--"|linebreaksbr }}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-8 text-gray-400">
+                            <i class="fas fa-comment-slash fa-2x mb-4"></i>
+                            <p>{% trans "هنوز نظری ثبت نشده است" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-200 flex flex-col sm:flex-row-reverse items-center sm:justify-end gap-4">
+            {% if product.id %} {# Only show edit if product exists #}
+                <a href="{% url 'product-update' pk=product.id %}"
+                   class="w-full sm:w-auto flex-shrink-0 inline-flex justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150">
+                    <i class="fas fa-edit ml-2"></i>
+                    {% trans "ویرایش محصول" %}
+                </a>
+
+
+            {% endif %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animation trigger logic
+            const animatedElements = document.querySelectorAll('.animate-card');
+            animatedElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.style.opacity = 0; // Ensure hidden initially
+                el.style.transform = 'translateY(10px)'; // Ensure initial transform
+                el.style.animationFillMode = 'forwards'; // Keep final state
+            });
+
+            // Trigger reflow to ensure animations run
+            document.body.offsetHeight;
+
+            // Reapply animation classes after reflow
+            animatedElements.forEach((el) => {
+                el.style.animationPlayState = 'running'; // Ensure animation plays
+            });
+
+            // Optional: JS for delete confirmation if delete button is uncommented
+            /*
+            window.confirmDelete = function(deleteUrl) {
+                if (confirm('
+            {% translate "آیا از حذف این محصول اطمینان دارید؟ این عمل غیرقابل بازگشت است." %}')) {
+                     // You would typically submit a form here
+                     // Example using a form submit (assuming you wrap the button in a form)
+                     // document.getElementById('delete-form-' + productId).submit();
+                     // Or you might make an AJAX call
+                 }
+             };
+             */
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "website/base.html" %}
+
+{% block title %}لیست فروشگاه‌ها | دیجی‌شاپ{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" x-data="storeList()" x-init="fetchStores()">
+  <h1 class="text-2xl font-bold mb-6 text-center">لیست فروشگاه‌ها</h1>
+
+  <!-- فیلتر مرتب‌سازی -->
+  <div class="mb-6 text-center">
+    <label class="mr-2 font-medium">مرتب‌سازی بر اساس:</label>
+    <select x-model="ordering" @change="fetchStores(1)" class="border rounded px-3 py-2">
+      <option value="-created_at">جدیدترین</option>
+      <option value="-total_sales">پرفروش‌ترین</option>
+      <option value="-rating">بالاترین امتیاز</option>
+    </select>
+  </div>
+
+  <!-- لودینگ -->
+  <template x-if="loading">
+    <div class="text-center text-gray-500">در حال بارگذاری فروشگاه‌ها...</div>
+  </template>
+
+  <!-- خطا -->
+  <template x-if="error">
+    <div class="text-center text-red-500" x-text="error"></div>
+  </template>
+
+  <!-- لیست فروشگاه‌ها -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="!loading && stores.length">
+    <template x-for="store in stores" :key="store.id">
+      <div class="flex items-center bg-white rounded-lg shadow p-6 hover:shadow-lg transition space-x-4 rtl:space-x-reverse">
+        <!-- عکس گرد فروشگاه -->
+        <img
+          :src="store.image || 'https://via.placeholder.com/100x100?text=No+Image'"
+          alt="عکس فروشگاه"
+          class="w-20 h-20 object-cover rounded-full border-2 border-gray-300"
+        />
+
+        <!-- اطلاعات فروشگاه -->
+        <div class="flex-1">
+          <h2 class="text-xl font-semibold mb-2" x-text="store.name"></h2>
+          <p class="text-gray-600 mb-4 text-sm" x-text="store.description || 'بدون توضیح'"></p>
+          <a
+            :href="'/store-detail/' + store.id + '/'"
+            class="inline-block bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+          >مشاهده فروشگاه</a>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- اگر فروشگاهی نبود -->
+  <template x-if="!loading && stores.length === 0">
+    <div class="text-center text-gray-500 mt-8">هیچ فروشگاهی موجود نیست.</div>
+  </template>
+
+  <!-- صفحه‌بندی -->
+  <div class="flex justify-center mt-8 space-x-2 rtl:space-x-reverse" x-show="totalPages > 1">
+    <button
+      class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+      :disabled="currentPage === 1"
+      @click="fetchStores(currentPage - 1)"
+    >قبلی</button>
+
+    <template x-for="page in totalPages" :key="page">
+      <button
+        class="px-3 py-1 rounded"
+        :class="currentPage === page ? 'bg-red-600 text-white' : 'bg-gray-100 hover:bg-gray-200'"
+        @click="fetchStores(page)"
+        x-text="page"
+      ></button>
+    </template>
+
+    <button
+      class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+      :disabled="currentPage === totalPages"
+      @click="fetchStores(currentPage + 1)"
+    >بعدی</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function storeList() {
+    return {
+      stores: [],
+      loading: true,
+      error: null,
+      ordering: '-created_at',
+      currentPage: 1,
+      totalPages: 1,
+
+      fetchStores(page = 1) {
+        this.loading = true;
+        this.currentPage = page;
+
+        fetch(`/stores-api/?ordering=${this.ordering}&page=${page}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('خطا در دریافت اطلاعات فروشگاه‌ها');
+            }
+            return response.json();
+          })
+          .then(data => {
+            this.stores = data.results || data;
+            this.totalPages = data.count ? Math.ceil(data.count / 20) : 1;
+          })
+          .catch(err => {
+            this.error = err.message;
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      }
+    }
+  }
+</script>
+{% endblock %}

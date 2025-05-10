@@ -1,0 +1,156 @@
+{% extends 'vendors/base.html' %}
+
+{% block title %}ثبت محصول جدید{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Premium Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+            <h1 class="text-3xl font-bold text-gray-900">ثبت محصول جدید</h1>
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 text-sm font-medium">
+                فروشگاه: {{ store.name }}
+            </span>
+        </div>
+        <div class="h-1 w-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
+    </div>
+
+    <!-- Enhanced Form Container -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        <!-- Elegant Form Header -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-700 px-6 py-4">
+            <h2 class="text-lg font-semibold text-white">ثبت اطلاعات محصول</h2>
+        </div>
+
+        <!-- Main Form Content -->
+        <div class="p-6 sm:p-8 space-y-6">
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+ <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in form %}
+                        {% if field.name != 'description' %}
+                        <!-- Standard Fields -->
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if field.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ field.errors.as_text|slice:2 }}</p>
+                            {% endif %}
+
+                            {% if field.help_text %}
+                                <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- Description Field (full width) -->
+                    <div class="md:col-span-2">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.description.label }}
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.description.errors.as_text|slice:2 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Image Upload Preview -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2"></label>
+                    <div class="mt-1 flex items-center space-x-4">
+                        <div id="imagePreviewContainer" class="flex flex-wrap gap-4">
+                            <!-- Image previews will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="pt-4 flex justify-end space-x-3">
+                    <a href="{% url 'product-list-vendor' %}" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out">
+                        انصراف
+                    </a>
+                    <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-sm transition duration-150 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <span class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            ثبت محصول
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle multiple image previews
+    const imageInput = document.querySelector('input[type="file"][multiple]');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            previewContainer.innerHTML = '';
+
+            for (const file of e.target.files) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'relative w-24 h-24 rounded-lg overflow-hidden shadow-md border border-gray-200';
+
+                    const img = document.createElement('img');
+                    img.className = 'w-full h-full object-cover';
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'absolute top-1 right-1 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-1 shadow-sm';
+                    removeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
+                    removeBtn.onclick = () => {
+                        previewDiv.remove();
+                    };
+
+                    reader.onload = function(e) {
+                        img.src = e.target.result;
+                        previewDiv.appendChild(img);
+                        previewDiv.appendChild(removeBtn);
+                        previewContainer.appendChild(previewDiv);
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+    }
+
+    // Enhance select fields with better styling
+    const selectFields = document.querySelectorAll('select');
+    selectFields.forEach(select => {
+        select.className = 'block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg bg-white';
+    });
+
+    // Enhance file input
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.className = 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition duration-150 ease-in-out';
+    }
+});
+</script>
+{% endblock %}
+

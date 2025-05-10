@@ -1,0 +1,110 @@
+{% extends 'website/base.html' %}
+
+{% block title %}پرداخت{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-8">
+    <h1 class="text-2xl font-bold text-center mb-6">پرداخت</h1>
+
+    <form id="checkout-form" class="space-y-6">
+        <div>
+            <label for="address_id" class="block text-lg font-medium">آدرس را انتخاب کنید:</label>
+            <select id="address_id" name="address_id" class="mt-2 block w-full p-3 border border-gray-300 rounded-lg" required>
+                <option value="">در حال بارگذاری آدرس‌ها...</option>
+            </select>
+        </div>
+
+        <div class="flex justify-center space-x-4">
+            <button type="submit" class="w-40 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">ثبت سفارش</button>
+        </div>
+    </form>
+
+    <div id="result" class="mt-6 text-center"></div>
+</div>
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const select = document.getElementById('address_id');
+    try {
+        const response = await fetch('/account/checkout/addresses/', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('خطا در دریافت آدرس‌ها');
+
+        const addresses = await response.json();
+        select.innerHTML = '<option value="">آدرس خود را انتخاب کنید</option>';
+
+        addresses.forEach(addr => {
+            const option = document.createElement('option');
+            option.value = addr.id;
+            option.textContent = addr.title + ' - ' + addr.full_address;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error(err);
+        select.innerHTML = '<option value="">خطا در بارگذاری آدرس‌ها</option>';
+    }
+});
+
+document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const addressId = document.getElementById('address_id').value;
+    const csrfToken = getCookie('csrftoken');
+    const result = document.getElementById('result');
+
+    if (!addressId) {
+        result.innerHTML = '<p class="text-red-500">لطفاً یک آدرس انتخاب کنید.</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch('/account/checkout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ address_id: addressId }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // ریدایرکت فوری به صفحه اصلی
+            window.location.href = '/';
+            // یا اگر بخوای ۲ ثانیه بعد از نمایش پیام موفقیت ریدایرکت بشه:
+            // result.innerHTML = `<p class="text-green-500 font-semibold">${data.detail} (کد سفارش: ${data.order_id})</p>`;
+            // setTimeout(() => window.location.href = '/', 2000);
+        } else {
+            result.innerHTML = `<p class="text-red-500">${data.detail}</p>`;
+        }
+
+    } catch (error) {
+        console.error(error);
+        result.innerHTML = '<p class="text-red-500">مشکلی در ثبت سفارش پیش آمد.</p>';
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
+{% endblock %}

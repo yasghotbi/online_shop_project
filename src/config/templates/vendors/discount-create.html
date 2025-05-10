@@ -1,0 +1,71 @@
+{% extends 'vendors/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+  <h1 class="text-3xl font-semibold mb-6">ایجاد تخفیف جدید</h1>
+
+  <form method="post" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-md w-full max-w-lg mx-auto">
+    {% csrf_token %}
+
+    <div class="mb-4">
+      <label for="name" class="block text-sm font-medium text-gray-700">نام تخفیف</label>
+      <input type="text" name="name" id="name" value="{{ form.name.value }}" class="mt-1 block w-full px-4 py-2 border rounded-md">
+      {% if form.name.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.name.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="value" class="block text-sm font-medium text-gray-700">مقدار تخفیف</label>
+      <input type="number" name="value" id="value" value="{{ form.value.value }}" class="mt-1 block w-full px-4 py-2 border rounded-md">
+      {% if form.value.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.value.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="type" class="block text-sm font-medium text-gray-700">نوع تخفیف</label>
+      {{ form.type }}
+      {% if form.type.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.type.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="start_at" class="block text-sm font-medium text-gray-700">تاریخ شروع</label>
+      {{ form.start_at }}
+      {% if form.start_at.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.start_at.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="finished_at" class="block text-sm font-medium text-gray-700">تاریخ پایان</label>
+      {{ form.finished_at }}
+      {% if form.finished_at.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.finished_at.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="is_deleted" class="block text-sm font-medium text-gray-700">وضعیت حذف</label>
+      {{ form.is_deleted }}
+      {% if form.is_deleted.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.is_deleted.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-6">
+      <label for="image" class="block text-sm font-medium text-gray-700">تصویر تخفیف</label>
+      {{ form.image }}
+      {% if form.image.errors %}
+      <p class="mt-2 text-sm text-red-600">{{ form.image.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mt-6">
+      <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700">ذخیره</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'vendors/base.html' %}
+{% block content %}
+<div class="container mx-auto py-6 px-4 max-w-6xl">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">مدیریت سفارش‌ها</h2>
+        <div class="flex space-x-2">
+            <div class="relative">
+                <select class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option>همه وضعیت‌ها</option>
+                    <option>در انتظار پرداخت</option>
+                    <option>در حال پردازش</option>
+                    <option>تکمیل شده</option>
+                    <option>لغو شده</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-2 text-gray-700">
+                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                فیلتر
+            </button>
+        </div>
+    </div>
+
+    {% if orders %}
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="grid grid-cols-12 bg-gray-100 p-4 border-b border-gray-200 text-sm font-medium text-gray-700">
+                <div class="col-span-1">شناسه</div>
+                <div class="col-span-3">مشتری</div>
+                <div class="col-span-2">تاریخ</div>
+                <div class="col-span-2">مبلغ</div>
+                <div class="col-span-2">وضعیت</div>
+                <div class="col-span-2 text-left">عملیات</div>
+            </div>
+
+            {% for order in orders %}
+            <div class="grid grid-cols-12 p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150 items-center">
+                <div class="col-span-1 text-sm font-medium text-gray-900">#{{ order.id }}</div>
+                <div class="col-span-3 text-sm text-gray-700">{{ order.customer }}</div>
+                <div class="col-span-2 text-sm text-gray-500">{{ order.created_at|date:"Y/m/d - H:i" }}</div>
+                <div class="col-span-2 text-sm font-medium">{{ order.total_price|floatformat:"0" }} تومان</div>
+                <div class="col-span-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'completed' %}bg-green-100 text-green-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ order.status }}
+                    </span>
+                </div>
+                <div class="col-span-2 flex space-x-2 justify-end">
+                    <a href="{% url 'store-orders-detail'  order.pk %}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </a>
+                    <a href="{% url 'store-orders-update' order.pk %}" class="text-green-600 hover:text-green-800 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-6 flex justify-between items-center">
+            <div class="text-sm text-gray-500">
+                نمایش {{ orders.start_index }} تا {{ orders.end_index }} از {{ orders.paginator.count }} سفارش
+            </div>
+            <div class="flex space-x-2">
+                {% if orders.has_previous %}
+                <a href="?page={{ orders.previous_page_number }}" class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+                    قبلی
+                </a>
+                {% endif %}
+
+                {% for num in orders.paginator.page_range %}
+                    {% if orders.number == num %}
+                    <span class="px-3 py-1 bg-blue-600 text-white rounded text-sm">{{ num }}</span>
+                    {% else %}
+                    <a href="?page={{ num }}" class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if orders.has_next %}
+                <a href="?page={{ orders.next_page_number }}" class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+                    بعدی
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">سفارشی وجود ندارد</h3>
+            <p class="mt-1 text-sm text-gray-500">هنوز هیچ سفارشی برای محصولات فروشگاه شما ثبت نشده است.</p>
+            <div class="mt-6">
+                <a href="{% url 'product-list' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    مشاهده محصولات
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

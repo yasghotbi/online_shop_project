@@ -1,0 +1,151 @@
+{% extends 'vendors/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Premium Header with Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                <li class="inline-flex items-center">
+                    <a href="#" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600">
+                        <svg class="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                        </svg>
+                        داشبورد
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                        </svg>
+                        <a href="#" class="ms-1 text-sm font-medium text-gray-500 hover:text-blue-600 md:ms-2">تخفیف‌ها</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                        </svg>
+                        <span class="ms-1 text-sm font-medium text-blue-600 md:ms-2">ویرایش تخفیف</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">ویرایش تخفیف: {{ discount.name }}</h1>
+                <p class="mt-1 text-sm text-gray-500">اطلاعات تخفیف را با دقت ویرایش نمایید</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-green-100 to-teal-100 text-green-800">
+                ID: {{ discount.id }}
+            </span>
+        </div>
+        <div class="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2"></div>
+    </div>
+
+    <!-- Premium Form Container -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <!-- Form Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+            <h2 class="text-lg font-semibold text-white">فرم ویرایش تخفیف</h2>
+        </div>
+
+        <!-- Main Form Content -->
+        <div class="p-6 space-y-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Form Fields Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in form %}
+                    <div class="relative">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        </label>
+
+                        <div class="mt-1 relative">
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if field.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ field.errors.as_text }}</p>
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <p class="mt-2 text-sm text-gray-500">{{ field.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span class="text-sm text-gray-500">اطلاعات شما با امنیت کامل ذخیره می‌شود</span>
+                    </div>
+
+                    <div class="flex space-x-3 rtl:space-x-reverse">
+                        <a href="{% url 'discount-list' %}" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out">
+                            انصراف
+                        </a>
+                        <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-sm transition duration-150 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            ذخیره تغییرات
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhance Select Fields
+    const selectFields = document.querySelectorAll('select');
+    selectFields.forEach(select => {
+        select.className = 'block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg bg-white';
+    });
+
+    // Enhance Text Inputs
+    const textInputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]');
+    textInputs.forEach(input => {
+        input.className = 'block w-full px-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg shadow-sm';
+    });
+
+    // Special handling for discount value field
+    const discountValueField = document.querySelector('input[name="value"]');
+    if (discountValueField) {
+        const container = discountValueField.parentElement;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative rounded-md shadow-sm';
+
+        const unitSpan = document.createElement('span');
+        unitSpan.className = 'absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500';
+        unitSpan.textContent = document.querySelector('select[name="type"]').value === 'percentage' ? '%' : 'تومان';
+
+        discountValueField.className = 'block w-full pl-16 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg';
+        wrapper.appendChild(discountValueField);
+        wrapper.appendChild(unitSpan);
+        container.appendChild(wrapper);
+
+        // Update unit when discount type changes
+        document.querySelector('select[name="type"]').addEventListener('change', function() {
+            unitSpan.textContent = this.value === 'percentage' ? '%' : 'تومان';
+        });
+    }
+});
+</script>
+{% endblock %}

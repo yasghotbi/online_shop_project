@@ -1,0 +1,127 @@
+{% extends "website/base.html" %}
+{% load static i18n %}
+
+{% block title %}داشبورد مشتری{% endblock title %}
+
+{% block extra_css %}
+    <!-- اگر CSS اضافه نیاز دارید اینجا اضافه کنید -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="flex h-full min-h-screen bg-gray-100">
+    <!-- دکمه باز/بسته کردن منوی کناری برای موبایل -->
+    <div class="md:hidden p-4 bg-white shadow">
+        <button id="mobile-menu-btn" aria-label="باز/بسته کردن منوی کناری"
+                class="text-gray-600 hover:text-gray-900 focus:outline-none">
+            <i class="fas fa-bars fa-lg"></i>
+        </button>
+    </div>
+
+    <!-- منوی کناری (Sidebar) -->
+    {% block sidebar %}
+    <aside id="sidebar"
+           class="fixed inset-y-0 left-0 z-30 w-64 p-6 overflow-y-auto bg-white border-r border-gray-200 transform -translate-x-full transition-transform duration-200 ease-in-out md:relative md:translate-x-0 md:shadow-none md:border-none">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">
+            منوی کاربری
+        </h2>
+        <nav aria-label="ناوبری داشبورد مشتری">
+            <ul class="space-y-2">
+                <li>
+                    <a href="{% url 'customer-profile' user.pk %}"
+                       class="sidebar-link flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                        <i class="fas fa-user ml-2"></i>
+                        پروفایل
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'address-list' %}"
+                       class="sidebar-link flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                        <i class="fas fa-map-marker-alt ml-2"></i>
+                        آدرس‌ها
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'order-list' %}"
+                       class="sidebar-link flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                        <i class="fas fa-shopping-bag ml-2"></i>
+                        سفارشات
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'user_ratings_list' %}"
+                       class="sidebar-link flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                        <i class="fas fa-heart ml-2"></i>
+                        نظرات
+                    </a>
+                </li>
+                <li class="border-t border-gray-200 my-2"></li>
+                <li>
+                    <a href="#" id="logout-btn"
+                       class="flex items-center px-3 py-2 rounded-md text-red-600 hover:bg-red-50 hover:text-red-800 transition">
+                        <i class="fas fa-sign-out-alt ml-2"></i>
+                        خروج
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    {% endblock sidebar %}
+
+    <!-- محتوای اصلی -->
+    <main class="flex-1 p-6 md:ml-64">
+        {% block dashboard_content %}
+        <!-- محتوای صفحات فرزند اینجا قرار می‌گیرد -->
+        {% endblock dashboard_content %}
+    </main>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    // باز/بسته کردن منوی کناری در موبایل
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const sidebar  = document.getElementById('sidebar');
+    if (mobileBtn) {
+        mobileBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+    }
+
+    // هایلایت لینک فعال در منوی کناری
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('bg-blue-50', 'text-blue-600');
+                link.classList.remove('hover:bg-blue-50', 'hover:text-blue-600');
+            }
+        });
+    });
+
+    // عملیات خروج با Fetch و CSRF
+    document.getElementById('logout-btn')?.addEventListener('click', e => {
+        e.preventDefault();
+        fetch("{% url 'logout' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            credentials: "same-origin"
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = "{% url 'login' %}";
+            } else {
+                throw new Error("خطا در خروج");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("خطا در خروج. لطفاً دوباره تلاش کنید.");
+        });
+    });
+</script>
+{% endblock extra_js %}

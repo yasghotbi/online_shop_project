@@ -1,0 +1,666 @@
+{% extends 'website/base.html' %}
+
+{% block content %}
+<div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div id="box" class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10">
+        <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out mb-8">
+            <svg class="rtl:ml-2 ltr:mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            بازگشت به فروشگاه
+        </button>
+
+        <div id="product-loading" class="flex flex-col justify-center items-center h-64">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500"></div>
+            <p class="mr-4 mt-4 text-gray-600">در حال بارگذاری اطلاعات محصول...</p>
+        </div>
+
+        <div id="product-detail" class="hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="md:w-1/2 flex justify-center items-start" id="product-image-container">
+                    {# Product image or placeholder will be loaded here #}
+                </div>
+                <div class="md:w-1/2 text-center md:text-right">
+                    <h2 class="text-3xl font-extrabold mb-2 text-gray-900" id="product-name"></h2>
+
+                     {# Placeholder for Average Rating Display #}
+                     {# Note: This will be populated AFTER reviews are fetched #}
+                    <div id="average-rating-display" class="flex items-center justify-center md:justify-end mb-4 text-yellow-500 text-xl">
+                         {# Average rating stars and text will be loaded here by Reviews API fetch #}
+                    </div>
+
+                    <div id="product-price-section">
+                         {# Price will be loaded here based on stock #}
+                    </div>
+
+                    <p class="mt-4 text-gray-700 leading-relaxed" id="product-description"></p>
+
+                    <div id="product-specs-section">
+                         {# Specs table will be loaded here #}
+                    </div>
+
+                    <div id="add-to-cart-section" class="mt-8 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+                         {# Quantity input and Add to Cart button will be here if in stock #}
+                    </div>
+
+                    <div id="out-of-stock-message" class="mt-8 text-center md:text-right text-red-600 font-bold text-lg hidden">
+                        متاسفیم! این محصول در حال حاضر ناموجود است.
+                    </div>
+
+                     <div id="add-to-cart-feedback" class="mt-4 text-sm text-center md:text-right hidden"></div>
+
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-10 border-gray-200">
+
+        <div id="reviews-section">
+            <h3 class="text-xl font-bold mb-6 text-gray-800">نظرات کاربران</h3>
+
+            <div id="reviews-loading" class="flex flex-col justify-center items-center h-32">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500"></div>
+                 <p class="mr-4 mt-2 text-gray-600">در حال بارگذاری نظرات...</p>
+            </div>
+
+            <div id="review-list" class="space-y-6 hidden">
+                {# Reviews will be loaded here by JS #}
+            </div>
+
+            <div id="no-reviews" class="text-center text-gray-500 italic mt-4 hidden">
+                هنوز نظری برای این محصول ثبت نشده است. اولین نفر باشید!
+            </div>
+
+            <div id="review-form" class="mt-10 p-6 bg-gray-50 rounded-lg shadow-inner hidden">
+                <h4 class="text-lg font-bold mb-4 text-gray-800">نظر شما:</h4>
+
+                <div id="rating-stars" class="flex flex-row-reverse justify-center mb-6 cursor-pointer hidden"> {# Initially hidden #}
+                     <span data-value="5" class="text-4xl text-gray-400 transition-colors duration-200 ease-in-out">&#9733;</span>
+                     <span data-value="4" class="text-4xl text-gray-400 transition-colors duration-200 ease-in-out">&#9733;</span>
+                     <span data-value="3" class="text-4xl text-gray-400 transition-colors duration-200 ease-in-out">&#9733;</span>
+                     <span data-value="2" class="text-4xl text-gray-400 transition-colors duration-200 ease-in-out">&#9733;</span>
+                     <span data-value="1" class="text-4xl text-gray-400 transition-colors duration-200 ease-in-out">&#9733;</span>
+                </div>
+
+                <textarea id="review-text" placeholder="متن نظر خود را اینجا بنویسید..." rows="5" class="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150 ease-in-out text-gray-700"></textarea>
+
+                <div id="error-message" class="text-red-600 text-sm mt-3 hidden"></div>
+                 <div id="success-message" class="text-green-600 text-sm mt-3 hidden"></div>
+
+                <button id="submit-review" class="mt-6 w-full sm:w-auto px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">ثبت نظر</button>
+            </div>
+
+            <div id="login-message" class="mt-6 text-center hidden">
+                <p class="text-gray-700 mb-4">برای ثبت نظر ابتدا وارد شوید:</p>
+                <button class="px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    ورود به حساب کاربری
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedRating = 3; // Default rating for review form
+let canRate = false; // Determined by backend API (Reviews API)
+
+// --- Helper Functions (Keep as is) ---
+function updateStars(rating) {
+    document.querySelectorAll('#rating-stars span').forEach(star => {
+        const starValue = parseInt(star.dataset.value);
+        if (starValue <= rating) {
+            star.classList.remove('text-gray-400');
+            star.classList.add('text-yellow-500');
+        } else {
+            star.classList.remove('text-yellow-500');
+            star.classList.add('text-gray-400');
+        }
+    });
+}
+
+function showLoading(elementId) {
+    document.getElementById(elementId).classList.remove('hidden');
+}
+
+function hideLoading(elementId) {
+    document.getElementById(elementId).classList.add('hidden');
+}
+
+function showError(message, elementId = 'error-message') {
+    const errorDiv = document.getElementById(elementId);
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+function hideError(elementId = 'error-message') {
+    document.getElementById(elementId).classList.add('hidden');
+    document.getElementById(elementId).textContent = '';
+}
+
+function showSuccess(message, elementId = 'success-message') {
+    const successDiv = document.getElementById(elementId);
+    successDiv.textContent = message;
+    successDiv.classList.remove('hidden');
+}
+
+function hideSuccess(elementId = 'success-message') {
+     document.getElementById(elementId).classList.add('hidden');
+     document.getElementById(elementId).textContent = '';
+}
+
+// Function to display average rating stars - Called after fetching reviews
+function displayAverageRating(rating) {
+    const avgRatingDiv = document.getElementById('average-rating-display');
+    if (rating === null || rating === undefined) {
+         avgRatingDiv.innerHTML = '<span class="text-sm text-gray-500">هنوز امتیازی ثبت نشده است.</span>';
+         return;
+    }
+    const roundedRating = Math.round(rating); // Round to nearest whole star for display
+    const starsHtml = `
+        ${'★'.repeat(roundedRating)}${'☆'.repeat(5 - roundedRating)}
+        <span class="text-base font-semibold mr-2">${rating.toFixed(1)}</span> {# Display actual rating rounded to one decimal #}
+    `;
+    avgRatingDiv.innerHTML = starsHtml;
+}
+// --- End Helper Functions ---
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize stars in the review form
+    updateStars(selectedRating);
+
+    // Add click listeners to stars in review form
+    document.querySelectorAll('#rating-stars span').forEach(star => {
+        star.addEventListener('click', () => {
+            selectedRating = parseInt(star.dataset.value);
+            updateStars(selectedRating);
+        });
+    });
+
+     // Add hover effect to stars in review form
+    document.querySelectorAll('#rating-stars span').forEach(star => {
+        star.addEventListener('mouseover', () => {
+            const hoverRating = parseInt(star.dataset.value);
+            updateStars(hoverRating); // Show hover rating
+        });
+        star.addEventListener('mouseout', () => {
+            updateStars(selectedRating); // Revert to selected rating
+        });
+    });
+
+
+    const productId = getProductId();
+    if (!productId) {
+        showError('شناسه محصول یافت نشد.');
+        hideLoading('product-loading');
+        hideLoading('reviews-loading');
+        return;
+    }
+
+    // --- Fetch Product Details (for name, description, price, stock, specs) ---
+    showLoading('product-loading');
+    fetch(`/api/products/${productId}/`, { credentials: 'same-origin' })
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('Failed to load product details.');
+            }
+            return r.json();
+        })
+        .then(d => {
+            hideLoading('product-loading');
+            const pd = document.getElementById('product-detail');
+            pd.classList.remove('hidden'); // Show product detail section
+
+            // Populate basic details
+            document.getElementById('product-name').textContent = d.name;
+            document.getElementById('product-description').textContent = d.description;
+
+            // Display image or placeholder
+            const productImageContainer = document.getElementById('product-image-container');
+             if (d.image) {
+                 productImageContainer.innerHTML = `<img src="${d.image}" alt="${d.name}" class="max-w-full h-auto rounded-lg shadow-lg object-cover">`;
+             } else {
+                 productImageContainer.innerHTML = `<div class="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">تصویر موجود نیست</div>`;
+             }
+
+
+            // Display price and add-to-cart based on stock
+            const priceSection = document.getElementById('product-price-section');
+            const addToCartSection = document.getElementById('add-to-cart-section');
+            const outOfStockMessage = document.getElementById('out-of-stock-message');
+
+            if (d.stock > 0) {
+                // Product is in stock
+                const priceHtml = d.price_after_discount
+                    ? `<div class="flex items-baseline justify-center md:justify-end mb-4">
+                          <div class="text-green-600 text-xl font-bold">${d.price_after_discount.toLocaleString('fa-IR')} تومان</div>
+                          <div class="text-red-500 text-sm line-through mr-2">${d.price.toLocaleString('fa-IR')} تومان</div>
+                        </div>`
+                    : `<div class="text-green-600 text-xl font-bold mb-4 text-center md:text-right">${d.price.toLocaleString('fa-IR')} تومان</div>`;
+
+                priceSection.innerHTML = priceHtml;
+                priceSection.classList.remove('hidden');
+
+                addToCartSection.innerHTML = `
+                     <label for="qty" class="font-semibold text-gray-700">تعداد:</label>
+                     <input type="number" value="1" min="1" id="qty" class="w-20 border border-gray-300 rounded-md p-2 text-center focus:outline-none focus:ring-2 focus:ring-green-500">
+                     <button class="add-to-cart-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md shadow-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                         افزودن به سبد
+                     </button>
+                `;
+                addToCartSection.classList.remove('hidden');
+                outOfStockMessage.classList.add('hidden');
+
+                // Add event listener to the add-to-cart button now that it's in the DOM
+                addToCartSection.querySelector('.add-to-cart-btn').onclick = () => {
+                    const qtyInput = document.getElementById('qty');
+                    addToCart(d.id, parseInt(qtyInput.value));
+                };
+
+            } else {
+                // Product is out of stock
+                priceSection.innerHTML = ''; // Hide price
+                priceSection.classList.add('hidden');
+
+                addToCartSection.innerHTML = ''; // Hide quantity and button
+                addToCartSection.classList.add('hidden');
+
+                outOfStockMessage.classList.remove('hidden'); // Show out of stock message
+            }
+
+
+            // Display specs if available
+            const specsSection = document.getElementById('product-specs-section');
+             const specs = d.variant ? Object.entries(d.variant).map(([k, v]) => `
+                <tr>
+                    <td class="font-semibold py-2 px-4 border-b border-gray-200">${k}</td>
+                    <td class="py-2 px-4 border-b border-gray-200">${v}</td>
+                </tr>`).join('') : '';
+
+            if(specs) {
+                specsSection.innerHTML = `
+                    <div class="mt-8 text-right">
+                        <h4 class="text-lg font-bold mb-3 text-gray-800">مشخصات فنی:</h4>
+                        <table class="w-full text-sm text-right border-collapse rounded-lg overflow-hidden bg-gray-50">
+                            <tbody>${specs}</tbody>
+                        </table>
+                    </div>
+                `;
+                specsSection.classList.remove('hidden');
+            } else {
+                 specsSection.innerHTML = '';
+                 specsSection.classList.add('hidden');
+            }
+
+
+        })
+        .catch(error => {
+            hideLoading('product-loading');
+            showError('خطا در بارگذاری اطلاعات محصول. لطفا دوباره تلاش کنید.');
+            console.error('Error fetching product details:', error);
+        });
+
+    // --- Fetch Reviews (for review list, canRate, and average_rating) ---
+    showLoading('reviews-loading');
+    fetch(`/products/${productId}/reviews/`, { credentials: 'same-origin' })
+        .then(r => {
+             if (!r.ok) {
+                throw new Error('Failed to load reviews.');
+            }
+            return r.json();
+        })
+        .then(data => {
+            hideLoading('reviews-loading');
+
+            // Display average rating from reviews API response
+            displayAverageRating(data.average_rating);
+
+            // Show the list of reviews
+            showReviews(data.reviews);
+
+            canRate = data.can_rate; // Determine if user can rate from reviews API
+
+            // --- Check Authentication for Review Form ---
+            fetch('/accounts/me/', { credentials: 'same-origin' })
+                .then(r => {
+                    if (r.ok) {
+                        return r.json(); // User is authenticated
+                    } else {
+                        throw new Error('User not authenticated.');
+                    }
+                })
+                .then(() => {
+                    // User is logged in, show review form logic
+                    document.getElementById('review-form').classList.remove('hidden');
+                    document.getElementById('login-message').classList.add('hidden');
+
+                     // Show/hide rating stars based on canRate
+                    if (canRate) {
+                        document.getElementById('rating-stars').classList.remove('hidden');
+                    } else {
+                        document.getElementById('rating-stars').classList.add('hidden');
+                         // Reset selected rating to null if user can't rate, so it's not sent
+                         selectedRating = null;
+                    }
+
+
+                    // Add event listener for submit review button
+                    document.getElementById('submit-review').onclick = () => {
+                        const txt = document.getElementById('review-text').value.trim();
+                        if (!txt) {
+                            showError('لطفا متن نظر خود را وارد کنید.');
+                            hideSuccess();
+                            return;
+                        }
+                         hideError();
+                         hideSuccess();
+
+                        // Pass selectedRating only if canRate is true (ratingValue will be null otherwise)
+                        const ratingToSend = canRate ? selectedRating : null;
+                        submitReview(productId, txt, ratingToSend);
+                    };
+                })
+                .catch(() => {
+                    // User is not logged in, show login message
+                    document.getElementById('review-form').classList.add('hidden');
+                    document.getElementById('login-message').classList.remove('hidden');
+                    // Add event listener for login button
+                    document.getElementById('login-message').querySelector('button').onclick = redirectToLogin;
+                });
+        })
+        .catch(error => {
+            hideLoading('reviews-loading');
+             showError('خطا در بارگذاری نظرات.');
+            console.error('Error fetching reviews:', error);
+             // If reviews fail, we still need to check auth status for the review form/login message
+             fetch('/accounts/me/', { credentials: 'same-origin' })
+                .then(r => {
+                    if (!r.ok) throw new Error();
+                })
+                .catch(() => {
+                    // Still not logged in, show login message
+                    document.getElementById('review-form').classList.add('hidden');
+                    document.getElementById('login-message').classList.remove('hidden');
+                     document.getElementById('login-message').querySelector('button').onclick = redirectToLogin;
+                });
+        });
+
+    // Load cart count (assuming a place to display it exists in base.html)
+    loadCartCount();
+
+     // Event listener for the back button
+    document.querySelector('#box > button').addEventListener('click', () => {
+        window.location.href = '/';
+    });
+});
+
+// Keep getProductId, getCookie, redirectToLogin, loadCartCount, addToCart, showReviews, submitReview, loadReviews functions as they are
+// ... (Keep these functions, ensuring they match the previous versions that included error handling, loading states, etc.) ...
+
+
+function getProductId() {
+    const parts = window.location.pathname.split('/');
+    const productIndex = parts.indexOf('product');
+    if (productIndex !== -1 && parts.length > productIndex + 1) {
+        const productId = parts[productIndex + 1];
+        if (/^\d+$/.test(productId)) {
+             return productId;
+        }
+    }
+    return null;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function redirectToLogin() {
+    const nextUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/accounts/login/?next=${nextUrl}`;
+}
+
+function loadCartCount() {
+    fetch('/api/cart/', { credentials: 'same-origin' })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(cart => {
+            const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems > 0 ? totalItems : '';
+                 if (totalItems > 0) {
+                     cartCountElement.classList.add('inline-flex', 'items-center', 'justify-center', 'w-5', 'h-5', 'text-xs', 'font-bold', 'leading-none', 'text-red-100', 'bg-red-600', 'rounded-full');
+                 } else {
+                      cartCountElement.className = '';
+                 }
+            }
+        })
+        .catch(() => {
+             console.error('Failed to load cart count.');
+             const cartCountElement = document.getElementById('cart-count');
+             if (cartCountElement) {
+                 cartCountElement.textContent = '';
+                  cartCountElement.className = '';
+             }
+        });
+}
+
+function addToCart(id, qty) {
+    if (qty < 1) {
+        showError('تعداد محصول باید حداقل 1 باشد.', 'add-to-cart-feedback');
+        hideSuccess('add-to-cart-feedback');
+        return;
+    }
+     hideError('add-to-cart-feedback');
+     hideSuccess('add-to-cart-feedback');
+
+
+    const addButton = document.querySelector('#add-to-cart-section .add-to-cart-btn');
+    if (!addButton) return;
+
+    const originalButtonText = addButton.textContent;
+    addButton.textContent = 'در حال افزودن...';
+    addButton.disabled = true;
+    addButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+    fetch('/api/cart/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ product: id, quantity: qty })
+    })
+    .then(r => {
+        addButton.textContent = originalButtonText;
+        addButton.disabled = false;
+        addButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        if (!r.ok) {
+            return r.json().catch(() => ({ detail: 'خطا در افزودن محصول به سبد.' }))
+                    .then(err => Promise.reject(err));
+        }
+        return r.json();
+    })
+    .then(() => {
+        loadCartCount();
+        showSuccess('محصول با موفقیت به سبد خرید اضافه شد!', 'add-to-cart-feedback');
+        setTimeout(() => hideSuccess('add-to-cart-feedback'), 5000);
+    })
+    .catch(error => {
+         const errorMessage = error.detail || 'خطا در افزودن به سبد خرید.';
+         showError(errorMessage, 'add-to-cart-feedback');
+         hideSuccess('add-to-cart-feedback');
+         console.error('Add to cart error:', error);
+    });
+}
+
+function showReviews(reviews) {
+    const list = document.getElementById('review-list');
+    const noReviewsMessage = document.getElementById('no-reviews');
+
+    list.innerHTML = '';
+    hideLoading('reviews-loading');
+
+    if (!reviews || reviews.length === 0) {
+        list.classList.add('hidden');
+        noReviewsMessage.classList.remove('hidden');
+        return;
+    }
+
+    noReviewsMessage.classList.add('hidden');
+    list.classList.remove('hidden');
+
+    reviews.forEach(rv => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-5 rounded-lg shadow-sm border border-gray-200';
+
+        const starsHtml = (rv.rating !== null && rv.rating !== undefined) ? `
+            <div class="text-yellow-500 text-lg mb-2">
+                ${'★'.repeat(Math.round(rv.rating))}${'☆'.repeat(5 - Math.round(rv.rating))}
+            </div>` : '';
+
+        div.innerHTML = `
+            ${starsHtml}
+            <div class="text-gray-800 leading-relaxed">${rv.review}</div>
+            <div class="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-100">
+                توسط <span class="font-semibold">${rv.user_fullname || rv.user || 'کاربر ناشناس'}</span>
+
+            </div>
+        `;
+
+        list.appendChild(div);
+    });
+}
+
+function submitReview(productId, reviewText, ratingValue) {
+     hideError();
+     hideSuccess();
+
+    const submitButton = document.getElementById('submit-review');
+    const originalButtonText = submitButton.textContent;
+    submitButton.textContent = 'در حال ارسال...';
+    submitButton.disabled = true;
+    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+
+    const body = { review: reviewText };
+    if (ratingValue !== null) { // Check specifically for null, as 0 is a valid rating
+        body.rating = ratingValue;
+    }
+
+
+    fetch(`/products/${productId}/reviews/`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(body)
+    })
+    .then(async res => {
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.status === 201) {
+            showSuccess(data.detail || 'نظر شما با موفقیت ثبت شد.');
+            document.getElementById('review-text').value = '';
+            selectedRating = 3;
+            updateStars(selectedRating);
+             if (canRate) {
+                 document.getElementById('rating-stars').classList.remove('hidden');
+            } else {
+                 document.getElementById('rating-stars').classList.add('hidden');
+            }
+
+            loadReviews(productId); // Reload reviews to show the new one and update average rating
+        } else if (res.status === 400) {
+            showError(data.detail || 'خطا در ثبت نظر. لطفا دوباره بررسی کنید.');
+        } else if (res.status === 401) {
+            redirectToLogin();
+        } else if (res.status === 403) {
+             showError(data.detail || 'شما اجازه ثبت نظر برای این محصول را ندارید.');
+        }
+        else {
+            showError('خطای ناشناخته‌ای در هنگام ثبت نظر رخ داد.');
+        }
+    })
+    .catch(error => {
+         showError('خطا در ارتباط با سرور برای ثبت نظر.');
+         console.error('Submit review error:', error);
+    });
+}
+
+function loadReviews(productId) {
+    const reviewList = document.getElementById('review-list');
+     // Show a temporary loading spinner while reloading just the reviews list
+    reviewList.innerHTML = '<div class="flex justify-center items-center py-4"><div class="animate-spin rounded-full h-8 w-8 border-t-4 border-blue-500"></div></div>';
+
+
+    fetch(`/products/${productId}/reviews/`, { credentials: 'same-origin' })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+             displayAverageRating(data.average_rating); // Update average rating
+             showReviews(data.reviews); // Re-render the reviews list
+             canRate = data.can_rate; // Update canRate status
+
+             // After reloading reviews, re-check auth status for review form visibility
+             fetch('/accounts/me/', { credentials: 'same-origin' })
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(() => {
+                     // User logged in - ensure form is visible
+                    document.getElementById('review-form').classList.remove('hidden');
+                    document.getElementById('login-message').classList.add('hidden');
+                    // Show/hide rating stars based on the updated canRate
+                    if (canRate) {
+                        document.getElementById('rating-stars').classList.remove('hidden');
+                    } else {
+                        document.getElementById('rating-stars').classList.add('hidden');
+                         selectedRating = null;
+                    }
+
+                     // Re-attach event listener for submit button (if the form was hidden/shown)
+                      document.getElementById('submit-review').onclick = () => {
+                        const txt = document.getElementById('review-text').value.trim();
+                        if (!txt) {
+                            showError('لطفا متن نظر خود را وارد کنید.');
+                            hideSuccess();
+                            return;
+                        }
+                         hideError();
+                         hideSuccess();
+                         const ratingToSend = canRate ? selectedRating : null;
+                         submitReview(productId, txt, ratingToSend);
+                    };
+                })
+                .catch(() => {
+                     // User not logged in - ensure login message is visible
+                    document.getElementById('review-form').classList.add('hidden');
+                    document.getElementById('login-message').classList.remove('hidden');
+                     document.getElementById('login-message').querySelector('button').onclick = redirectToLogin;
+                });
+
+        })
+        .catch(e => {
+            reviewList.innerHTML = '<p class="text-red-600 text-center py-4">خطا در بارگذاری مجدد نظرات.</p>';
+            console.error('Error reloading reviews:', e);
+        });
+}
+
+</script>
+{% endblock %}

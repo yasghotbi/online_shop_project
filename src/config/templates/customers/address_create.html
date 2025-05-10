@@ -1,0 +1,64 @@
+{% extends "customers/customer-dashboard.html" %}
+{% load static %}
+
+{% block title %}ساخت آدرس جدید | فروشگاه حرفه‌ای{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">ساخت آدرس جدید</h1>
+        <a href="{% url 'address-list' %}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-list ml-1"></i> بازگشت به لیست آدرس‌ها
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- عنوان -->
+                <div class="form-group">
+                    <label for="id_title" class="block text-sm font-medium text-gray-700">عنوان آدرس</label>
+                    <input type="text" name="title" id="id_title"
+                           class="mt-1 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           required>
+                </div>
+
+                <!-- آدرس -->
+                <div class="form-group">
+                    <label for="id_address_text" class="block text-sm font-medium text-gray-700">آدرس</label>
+                    <textarea name="address_text" id="id_address_text" rows="3"
+                              class="mt-1 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              required></textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- کد پستی -->
+                <div class="form-group">
+                    <label for="id_post_code" class="block text-sm font-medium text-gray-700">کد پستی</label>
+                    <input type="text" name="post_code" id="id_post_code"
+                           class="mt-1 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           required>
+                </div>
+
+                <!-- شهر -->
+                <div class="form-group">
+                    <label for="id_city" class="block text-sm font-medium text-gray-700">شهر</label>
+                    <input type="text" name="city" id="id_city"
+                           class="mt-1 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           required>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <button type="submit"
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition">
+                    ثبت آدرس جدید
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock dashboard_content %}

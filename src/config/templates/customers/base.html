@@ -1,0 +1,95 @@
+{#{% extends "website/base.html" %}#}
+{#{% load static %}#}
+{#<!DOCTYPE html>#}
+{#<html lang="fa" dir="rtl">#}
+{#<head>#}
+{#    <meta charset="UTF-8">#}
+{#    <meta name="viewport" content="width=device-width, initial-scale=1.0">#}
+{#    <title>{% block title %}فروشگاه حرفه‌ای{% endblock %}</title>#}
+{##}
+{#    <!-- Tailwind CSS -->#}
+{#    <script src="https://cdn.tailwindcss.com"></script>#}
+{##}
+{#    <!-- Vazirmatn Font -->#}
+{#    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">#}
+{##}
+{#    <!-- Font Awesome -->#}
+{#    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">#}
+{##}
+{#    <style>#}
+{#        body { font-family: 'Vazirmatn', sans-serif; }#}
+{#        .sidebar-link.active { background-color: #fef2f2; color: #dc2626; font-weight: 600; }#}
+{#        .no-scroll { overflow: hidden; }#}
+{#        .sidebar-content-mobile { transform: translateX(100%); transition: transform 0.3s ease-in-out; }#}
+{#        .sidebar-content-mobile.is-open { transform: translateX(0); }#}
+{#    </style>#}
+{##}
+{#    {% block extra_head %}{% endblock %}#}
+{#</head>#}
+{##}
+{#<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">#}
+{##}
+{#    <!-- Header -->#}
+{##}
+{##}
+{#    <!-- Main Content -->#}
+{#    <div class="flex flex-grow max-w-7xl mx-auto w-full px-4 py-8">#}
+{#        {% block content %}#}
+{#        {% endblock %}#}
+{#    </div>#}
+{##}
+{#    <!-- Footer -->#}
+{##}
+{##}
+{#    {% block extra_scripts %}#}
+{#    <script>#}
+{#        document.addEventListener('DOMContentLoaded', () => {#}
+{#            const sidebarLinks = document.querySelectorAll('.sidebar-link');#}
+{#            sidebarLinks.forEach(link => {#}
+{#                if (link.pathname === window.location.pathname || link.href === window.location.href) {#}
+{#                    link.classList.add('active');#}
+{#                }#}
+{#                if (link.href.includes(window.location.pathname)) {#}
+{#                    link.classList.add('active');#}
+{#                }#}
+{#            });#}
+{##}
+{#            const sidebarToggle = document.getElementById('mobile-sidebar-toggle');#}
+{#            const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');#}
+{#            const mobileSidebarContent = document.getElementById('mobile-sidebar-content');#}
+{#            const sidebarClose = document.getElementById('mobile-sidebar-close');#}
+{#            const body = document.body;#}
+{##}
+{#            if (sidebarToggle && mobileSidebarOverlay && mobileSidebarContent && sidebarClose) {#}
+{#                sidebarToggle.addEventListener('click', () => {#}
+{#                    mobileSidebarOverlay.classList.remove('hidden');#}
+{#                    body.classList.add('no-scroll');#}
+{#                    setTimeout(() => {#}
+{#                        mobileSidebarContent.classList.add('is-open');#}
+{#                    }, 10);#}
+{#                });#}
+{##}
+{#                const closeSidebar = () => {#}
+{#                    mobileSidebarContent.classList.remove('is-open');#}
+{#                    setTimeout(() => {#}
+{#                        mobileSidebarOverlay.classList.add('hidden');#}
+{#                        body.classList.remove('no-scroll');#}
+{#                    }, 300);#}
+{#                };#}
+{##}
+{#                sidebarClose.addEventListener('click', closeSidebar);#}
+{#                mobileSidebarOverlay.addEventListener('click', (event) => {#}
+{#                    if (event.target === mobileSidebarOverlay) {#}
+{#                        closeSidebar();#}
+{#                    }#}
+{#                });#}
+{#                mobileSidebarContent.querySelectorAll('a').forEach(link => {#}
+{#                    link.addEventListener('click', closeSidebar);#}
+{#                });#}
+{#            }#}
+{#        });#}
+{#    </script>#}
+{#    {% endblock %}#}
+{##}
+{#</body>#}
+{#</html>#}
